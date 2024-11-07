@@ -111,6 +111,10 @@ const MemepadPage = lazy(async () => ({
   default: (await import("sections/memepad/MemepadPage")).MemepadPage,
 }))
 
+const DepositPage = lazy(async () => ({
+  default: (await import("sections/deposit/DepositPage")).DepositPage,
+}))
+
 export const routes: Route[] = [
   {
     path: "/",
@@ -388,6 +392,14 @@ export const routes: Route[] = [
     element: (
       <Suspense fallback={<MemepadPageSkeleton />}>
         <MemepadPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "deposit",
+    element: (
+      <Suspense fallback={null}>
+        <DepositPage />
       </Suspense>
     ),
   },

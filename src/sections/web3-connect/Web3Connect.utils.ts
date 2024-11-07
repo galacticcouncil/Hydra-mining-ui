@@ -160,8 +160,12 @@ export const useWalletAccounts = (
           connectedProviders.map(async ({ wallet }) => {
             if (!wallet) return []
             try {
+              if (!wallet.extension) {
+                await wallet.enable(POLKADOT_APP_NAME)
+              }
               return await wallet.getAccounts()
             } catch (e) {
+              console.log(e)
               return []
             }
           }),
