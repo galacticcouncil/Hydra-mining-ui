@@ -13,6 +13,9 @@ const METAMASK_LIKE_CHECKS = [
   "isTrust",
   "isBraveWallet",
   "isEnkrypt",
+  "isCoinbaseWallet",
+  "isNightly",
+  "isRabby",
 ] as const
 type MetaMaskLikeChecksValues = (typeof METAMASK_LIKE_CHECKS)[number]
 
@@ -68,7 +71,6 @@ export function isMetaMaskLike(
 ): provider is Required<MetaMaskLikeProvider> {
   return (
     !!provider &&
-    typeof provider?.isMetaMask === "boolean" &&
     METAMASK_LIKE_CHECKS.some(
       (key) => !!(provider as MetaMaskLikeProvider)?.[key],
     )
@@ -95,6 +97,18 @@ export function isTrustWallet(provider: Maybe<ExternalProvider>) {
 
 export function isBraveWallet(provider: Maybe<ExternalProvider>) {
   return isMetaMaskLike(provider) && !!provider?.isBraveWallet
+}
+
+export function isCoinbaseWallet(provider: Maybe<ExternalProvider>) {
+  return isMetaMaskLike(provider) && !!provider?.isCoinbaseWallet
+}
+
+export function isNightly(provider: Maybe<ExternalProvider>) {
+  return isMetaMaskLike(provider) && !!provider?.isNightly
+}
+
+export function isRabbyWallet(provider: Maybe<ExternalProvider>) {
+  return isMetaMaskLike(provider) && !!provider?.isRabby
 }
 
 export function isEnkrypt(provider: Maybe<ExternalProvider>) {
@@ -131,12 +145,28 @@ export async function requestNetworkSwitch(
 
     if (errorType === "CHAIN_NOT_FOUND") {
       try {
-        await provider
-          .request({
+        await Promise.race([
+          provider.request({
             method: "wallet_addEthereumChain",
             params: [params],
-          })
-          .then(options?.onSwitch)
+          }),
+          new Promise((resolve) => {
+            const id = setInterval(async () => {
+              const chainId = await provider.request({ method: "eth_chainId" })
+              if (chainId === params.chainId) {
+                resolve(true)
+                clearInterval(id)
+              } else {
+                await provider.request({
+                  method: "wallet_switchEthereumChain",
+                  params: [params],
+                })
+              }
+            }, 5000)
+          }),
+        ])
+
+        options?.onSwitch?.()
       } catch (err) {}
     } else {
       throw new Error(error)
@@ -202,6 +232,11 @@ function normalizeChainSwitchError(
 ) {
   if (!provider) return
   let message: Record<string, any> = {}
+
+  if (typeof error === "string") {
+    return "CHAIN_NOT_FOUND"
+  }
+
   try {
     message =
       typeof error?.message === "string" ? JSON.parse(error.message) : {}

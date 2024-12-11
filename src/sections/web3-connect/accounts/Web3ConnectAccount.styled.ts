@@ -68,13 +68,19 @@ export const SAccountItem = styled.div<{
   }}
 `
 
-export const SChangeAccountButton = styled(Button)`
-  border: 1px solid rgba(${theme.rgbColors.brightBlue300}, 0.12);
-  border-top-color: transparent;
+export const SChangeAccountButton = styled(Button)<{ isActive?: boolean }>`
+  border: 1px solid transparent;
+  border-color: ${({ isActive }) =>
+    isActive ? `rgba(${theme.rgbColors.brightBlue300}, 0.12)` : ""};
+  border-top-color: ${({ isActive }) =>
+    isActive ? `transparent` : `rgba(${theme.rgbColors.alpha0}, 0.12)`};
 
   border-radius: ${theme.borderRadius.medium}px;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 
-  background: rgba(${theme.rgbColors.primaryA15}, 0.12);
+  background: ${({ isActive }) =>
+    isActive
+      ? `rgba(${theme.rgbColors.primaryA15}, 0.12)`
+      : `rgba(${theme.rgbColors.alpha0}, 0.06)`};
 `

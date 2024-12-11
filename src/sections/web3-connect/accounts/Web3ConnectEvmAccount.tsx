@@ -26,9 +26,7 @@ export const Web3ConnectEvmAccount: FC<
   // Allow account changing for MetaMask wallets,
   // but disable for MetaMask-like as it doesn't provide a way to open the account selection programmatically
   const shouldAllowAccountChange =
-    isActive &&
-    isMetaMask(wallet?.extension) &&
-    !isMetaMaskLike(wallet?.extension)
+    isMetaMask(wallet?.extension) && !isMetaMaskLike(wallet?.extension)
 
   return (
     <div>
@@ -51,6 +49,7 @@ export const Web3ConnectEvmAccount: FC<
       </SAccountItem>
       {shouldAllowAccountChange && (
         <SChangeAccountButton
+          isActive={isActive}
           variant="outline"
           fullWidth
           size="small"
