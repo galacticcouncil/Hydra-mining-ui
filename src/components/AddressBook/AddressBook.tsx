@@ -10,13 +10,30 @@ import { AddressBookInput } from "./input/AddressBookInput"
 import { AddressBookItem } from "./item/AddressBookItem"
 import { safeConvertAddressH160 } from "utils/evm"
 import { arraySearch } from "utils/helpers"
+import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
+import { WalletMode } from "sections/web3-connect/store/useWeb3ConnectStore"
 
-type Props = { onSelect: (address: string) => void }
+type Props = { onSelect: (address: string) => void; mode?: WalletMode }
 
-export const AddressBook = ({ onSelect }: Props) => {
+export const AddressBook = ({ onSelect, mode = WalletMode.Default }: Props) => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
-  const { addresses } = useAddressStore()
+  const { addresses: allAddresses } = useAddressStore()
+  const [filter, setFilter] = useState(mode)
+
+  const addresses = useMemo(() => {
+    if (filter === WalletMode.Substrate) {
+      return allAddresses.filter(
+        (address) => address.provider === "polkadot-js",
+      )
+    }
+
+    if (filter === WalletMode.EVM) {
+      return allAddresses.filter((address) => address.provider === "metamask")
+    }
+
+    return allAddresses
+  }, [allAddresses, filter])
 
   const items = useMemo(
     () => (search ? arraySearch(addresses, search) : addresses),
@@ -37,7 +54,16 @@ export const AddressBook = ({ onSelect }: Props) => {
         onAdd={() => setSearch("")}
         canAdd={canAdd}
       />
-      <Spacer size={14} />
+      {mode === WalletMode.Default ? (
+        <div sx={{ py: 14 }}>
+          <Web3ConnectModeFilter
+            active={filter}
+            onSetActive={(mode) => setFilter(mode)}
+          />
+        </div>
+      ) : (
+        <Spacer size={14} />
+      )}
       {!items.length ? (
         <AddressBookEmpty canAdd={canAdd} />
       ) : (
