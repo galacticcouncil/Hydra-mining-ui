@@ -394,6 +394,7 @@ export function createSubscanLink(
   const chain = chainsMap.get(chainKey)
 
   if (chain && isAnyParachain(chain) && chain.explorer) {
+    //
     return `${chain.explorer}/${path}/${data.toString()}`
   } else {
     return ""

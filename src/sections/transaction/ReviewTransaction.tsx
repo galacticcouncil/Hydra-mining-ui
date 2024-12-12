@@ -8,7 +8,6 @@ import { ReviewTransactionError } from "./ReviewTransactionError"
 import { ReviewTransactionForm } from "./ReviewTransactionForm"
 import { ReviewTransactionPending } from "./ReviewTransactionPending"
 import { ReviewTransactionSuccess } from "./ReviewTransactionSuccess"
-import { ReviewTransactionToast } from "./ReviewTransactionToast"
 import { ReviewTransactionXCallForm } from "./ReviewTransactionXCallForm"
 import { ReviewTransactionEvmTxForm } from "sections/transaction/ReviewTransactionEvmTxForm"
 import { WalletUpgradeModal } from "sections/web3-connect/upgrade/WalletUpgradeModal"
@@ -29,13 +28,15 @@ export const ReviewTransaction = (props: Transaction) => {
     isSuccess,
     isError: isSendError,
     error: sendError,
-    data,
-    txState,
+    isBroadcasted,
     reset,
-    txLink,
-    txHash,
-    bridge,
-  } = useSendTx(props.xcallMeta)
+  } = useSendTx({
+    id: props.id,
+    toast: props.toast,
+    onSuccess: (data) => props.onSuccess?.(data),
+    onError: props.onError,
+    xcallMeta: props.xcallMeta,
+  })
 
   if (!isLoaded) return null
 
@@ -43,7 +44,7 @@ export const ReviewTransaction = (props: Transaction) => {
   const error = sendError || signError
 
   const modalProps: Partial<ComponentProps<typeof Modal>> =
-    isLoading || isSuccess || isError
+    (isLoading && isBroadcasted) || isSuccess || isError
       ? {
           title: undefined,
           backdrop: isError ? "error" : "default",
@@ -55,32 +56,19 @@ export const ReviewTransaction = (props: Transaction) => {
             props.description ?? t("liquidity.reviewTransaction.modal.desc"),
         }
 
-  const handleTxOnClose = () => {
-    if (isLoading) {
-      setMinimizeModal(true)
-      return
-    }
-
-    if (isSuccess) {
-      props.onSuccess?.(data)
-    } else {
-      props.onError?.()
-    }
-  }
-
   const onClose = () => {
-    handleTxOnClose()
+    setMinimizeModal(true)
     props.onClose?.()
   }
 
   const onMinimizeModal = () => {
-    handleTxOnClose()
+    setMinimizeModal(true)
     if (!props.disableAutoClose) props.onClose?.()
   }
 
   const onBack = props.onBack
     ? () => {
-        handleTxOnClose()
+        setMinimizeModal(true)
         props.onBack?.()
       }
     : undefined
@@ -92,22 +80,6 @@ export const ReviewTransaction = (props: Transaction) => {
 
   return (
     <>
-      {minimizeModal && (
-        <ReviewTransactionToast
-          id={props.id}
-          isLoading={isLoading}
-          isSuccess={isSuccess}
-          isError={isError}
-          error={error}
-          link={txLink}
-          txHash={txHash}
-          onReview={onReview}
-          onClose={onMinimizeModal}
-          toastMessage={props.toastMessage}
-          bridge={bridge}
-        />
-      )}
-
       <Modal
         open={!minimizeModal}
         onBack={onBack}
@@ -120,11 +92,8 @@ export const ReviewTransaction = (props: Transaction) => {
         }
         {...modalProps}
       >
-        {isLoading ? (
-          <ReviewTransactionPending
-            txState={txState}
-            onClose={onMinimizeModal}
-          />
+        {isLoading && isBroadcasted ? (
+          <ReviewTransactionPending onClose={onMinimizeModal} />
         ) : isSuccess ? (
           <ReviewTransactionSuccess onClose={onMinimizeModal} />
         ) : isError ? (
@@ -154,6 +123,7 @@ export const ReviewTransaction = (props: Transaction) => {
               sendPermitTx(permit)
             }}
             onSignError={setSignError}
+            isLoading={isLoading}
           />
         ) : props.evmTx ? (
           <ReviewTransactionEvmTxForm
@@ -178,6 +148,7 @@ export const ReviewTransaction = (props: Transaction) => {
               sendEvmTx(data)
             }}
             onSignError={setSignError}
+            isLoading={isLoading}
           />
         ) : null}
       </Modal>

@@ -9,6 +9,7 @@ import {
 } from "sections/web3-connect/accounts/Web3ConnectAccount.styled"
 import { Web3ConnectAccountSelect } from "sections/web3-connect/accounts/Web3ConnectAccountSelect"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { useStore } from "state/store"
 import { isMetaMask, isMetaMaskLike, requestAccounts } from "utils/metamask"
 
 export const Web3ConnectEvmAccount: FC<
@@ -16,6 +17,7 @@ export const Web3ConnectEvmAccount: FC<
 > = ({ balance, ...account }) => {
   const { t } = useTranslation()
   const { account: currentAccount, setAccount, toggle } = useWeb3ConnectStore()
+  const { clearTransactions } = useStore()
   const { wallet } = useConnectedProvider(account.provider)
   const navigate = useNavigate()
 
@@ -39,6 +41,7 @@ export const Web3ConnectEvmAccount: FC<
           setAccount(account)
           toggle()
           navigate({ search: { account: undefined } })
+          clearTransactions()
         }}
       >
         <Web3ConnectAccountSelect

@@ -1,4 +1,3 @@
-import { ExtrinsicStatus } from "@polkadot/types/interfaces/author"
 import { Button } from "components/Button/Button"
 import { Spacer } from "components/Spacer/Spacer"
 import { Heading } from "components/Typography/Heading/Heading"
@@ -9,10 +8,9 @@ import { Spinner } from "components/Spinner/Spinner"
 
 type Props = {
   onClose: () => void
-  txState: ExtrinsicStatus["type"] | null
 }
 
-export const ReviewTransactionPending = ({ onClose, txState }: Props) => {
+export const ReviewTransactionPending = ({ onClose }: Props) => {
   const { t } = useTranslation()
   return (
     <div
@@ -43,9 +41,7 @@ export const ReviewTransactionPending = ({ onClose, txState }: Props) => {
 
       <Spacer size={40} />
 
-      {txState === "Broadcast" && (
-        <ReviewTransactionProgress duration={3} onComplete={onClose} />
-      )}
+      <ReviewTransactionProgress duration={3} onComplete={onClose} />
     </div>
   )
 }

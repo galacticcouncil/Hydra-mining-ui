@@ -7,16 +7,22 @@ import { AnimatePresence, domAnimation, LazyMotion } from "framer-motion"
 
 import { ToastSidebar } from "./sidebar/ToastSidebar"
 import { useBridgeToast, useProcessToasts } from "./Toast.utils"
+import { useStore } from "state/store"
 
 export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
   const { toasts, toastsTemp, hide, sidebar, setSidebar } = useToast()
+  const { transactions } = useStore()
 
   const bridgeToasts = toasts.filter(
     (toast) => toast.bridge && toast.variant === "progress",
   )
 
   const progressToasts = toasts.filter((toast) => {
-    return !toast.bridge && toast.variant === "progress"
+    return (
+      !toast.bridge &&
+      toast.variant === "progress" &&
+      !transactions?.find((transaction) => transaction.id === toast.id)
+    )
   })
 
   useBridgeToast(bridgeToasts)

@@ -24,6 +24,7 @@ import { H160, safeConvertAddressH160 } from "utils/evm"
 import { getAddressVariants } from "utils/formatting"
 import { FormValues } from "utils/helpers"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
+import { useStore } from "state/store"
 
 type Web3ConnectExternalFormProps = {
   form: UseFormReturn<{
@@ -48,6 +49,7 @@ export const Web3ConnectExternalForm = ({
   const navigate = useNavigate()
 
   const { getStatus, setAccount, disconnect } = useWeb3ConnectStore()
+  const { clearTransactions } = useStore()
 
   const { wallet: externalWallet } = useConnectedProvider(
     WalletProviderType.ExternalWallet,
@@ -116,6 +118,7 @@ export const Web3ConnectExternalForm = ({
       isExternalWalletConnected: true,
     })
     onSelect()
+    clearTransactions()
     navigate({
       search: { account: evmAddress ? evmAddress.slice(2) : address },
       fromCurrent: true,

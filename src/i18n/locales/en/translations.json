@@ -359,10 +359,6 @@
   "liquidity.reviewTransaction.modal.error.copy": "Copy error message",
   "liquidity.reviewTransaction.modal.error.copied": "Message copied!",
   "liquidity.reviewTransaction.modal.error.tip": "Not enough HDX for TIP",
-  "liquidity.reviewTransaction.toast.pending": "Submitting transaction...",
-  "liquidity.reviewTransaction.toast.success": "Transaction successful.",
-  "liquidity.reviewTransaction.toast.error": "Transaction failed.",
-  "liquidity.reviewTransaction.toast.unknown": "Transaction status unknown.",
   "liquidity.reviewTransaction.calldata.encoded": "Encoded call data",
   "liquidity.reviewTransaction.calldata.encodedHash": "Encoded call hash",
   "liquidity.reviewTransaction.calldata.decoded": "Decoded",
@@ -1237,5 +1233,9 @@
   "claimingRange.modal.warning.title": "Are you sure?",
   "claimingRange.modal.warning.description": " Don't claim rewards too early. Claiming forfeits any non-claimable rewards to the other LPs. Before claiming, make sure that your claim threshold is configured accordingly.",
   "claimingRange.modal.description1": "After joining a farm, a portion of the accumulated rewards is locked. These rewards unlock over time as you remain in the farm and follow loyalty factor curve",
-  "claimingRange.modal.description2": "Claiming forfeits the locked part of the rewards. Use this setting to tweak your preference over claiming faster or losing less rewards (default). This allows you to compound your rewards with ease."
+  "claimingRange.modal.description2": "Claiming forfeits the locked part of the rewards. Use this setting to tweak your preference over claiming faster or losing less rewards (default). This allows you to compound your rewards with ease.",
+  "toast.pending": "Submitting transaction...",
+  "toast.success": "Transaction successful.",
+  "toast.error": "Transaction failed.",
+  "toast.unknown": "Transaction status unknown."
 }

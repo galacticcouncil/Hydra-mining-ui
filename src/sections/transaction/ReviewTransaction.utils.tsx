@@ -3,7 +3,7 @@ import {
   TransactionResponse,
   Web3Provider,
 } from "@ethersproject/providers"
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { chainsMap, tags } from "@galacticcouncil/xcm-cfg"
 import { AccountId32, Hash } from "@open-web3/orml-types/interfaces"
 import { ApiPromise } from "@polkadot/api"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
@@ -19,9 +19,8 @@ import {
 import { useAssets } from "providers/assets"
 import { useShallow } from "hooks/useShallow"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useMountedState } from "react-use"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import {
   useEvmAccount,
@@ -31,7 +30,7 @@ import {
   EthereumSigner,
   PermitResult,
 } from "sections/web3-connect/signer/EthereumSigner"
-import { useSettingsStore } from "state/store"
+import { ToastMessage, useSettingsStore } from "state/store"
 import { useToast } from "state/toasts"
 import {
   H160,
@@ -44,7 +43,7 @@ import { isAnyParachain, Maybe } from "utils/helpers"
 import { createSubscanLink } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useIsTestnet } from "api/provider"
-import { tags } from "@galacticcouncil/xcm-cfg"
+import { useMountedState } from "react-use"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
 
@@ -196,26 +195,76 @@ export const useSendEvmTransactionMutation = (
       tx?: SubmittableExtrinsic<"promise">
     }
   > = {},
+  id: string,
+  toast?: ToastMessage,
   xcallMeta?: Record<string, string>,
 ) => {
-  const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
-  const [txHash, setTxHash] = useState<string>("")
-  const [txData, setTxData] = useState<string>()
+  const { t } = useTranslation()
+  const { loading, success, error, remove, sidebar } = useToast()
+  const [isBroadcasted, setIsBroadcasted] = useState(false)
 
   const { account } = useEvmAccount()
   const isTestnet = useIsTestnet()
 
+  const isMounted = useMountedState()
+
   const sendTx = useMutation(async ({ evmTx }) => {
     return await new Promise(async (resolve, reject) => {
       try {
-        setTxState("Broadcast")
-        setTxHash(evmTx?.hash ?? "")
-        setTxData(evmTx?.data)
+        const txHash = evmTx?.hash
+        const txData = evmTx?.data
+
+        const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
+        const chain = account?.chainId ? getEvmChainById(account.chainId) : null
+        const link =
+          txHash && chain
+            ? getEvmTxLink(txHash, txData, chain.key, isTestnet, isSnowBridge)
+            : ""
+
+        const isApproveTx = txData?.startsWith("0x095ea7b3")
+
+        const destChain = xcallMeta?.dstChain
+          ? chainsMap.get(xcallMeta.dstChain)
+          : undefined
+
+        const xcm = xcallMeta ? "evm" : undefined
+
+        const bridge =
+          chain?.isEvmChain() || destChain?.isEvmChain()
+            ? chain?.key
+            : undefined
+
+        loading({
+          id,
+          title: toast?.onLoading ?? <p>{t("toast.pending")}</p>,
+          link,
+          txHash,
+          bridge: isApproveTx || isSnowBridge ? undefined : bridge,
+          hidden: true,
+          xcm,
+        })
+
+        setIsBroadcasted(true)
+
         const receipt = await evmTx.wait()
-        setTxState("InBlock")
+
+        if (isMounted() && !xcm) {
+          success({
+            title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
+            link,
+            txHash,
+            hidden: sidebar,
+          })
+
+          remove(id)
+        }
 
         return resolve(evmTxReceiptToSubmittableResult(receipt))
       } catch (err) {
+        error({
+          title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
+          hidden: sidebar,
+        })
         reject(
           new TransactionError(err?.toString() ?? "Unknown error", {
             from: evmTx.from,
@@ -229,33 +278,9 @@ export const useSendEvmTransactionMutation = (
     })
   }, options)
 
-  const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
-  const chain = account?.chainId ? getEvmChainById(account.chainId) : null
-  const txLink =
-    txHash && chain
-      ? getEvmTxLink(txHash, txData, chain.key, isTestnet, isSnowBridge)
-      : ""
-
-  const isApproveTx = txData?.startsWith("0x095ea7b3")
-
-  const destChain = xcallMeta?.dstChain
-    ? chainsMap.get(xcallMeta.dstChain)
-    : undefined
-
-  const bridge =
-    chain?.isEvmChain() || destChain?.isEvmChain() ? chain?.key : undefined
-
   return {
     ...sendTx,
-    txState,
-    txLink,
-    txHash,
-    bridge: isApproveTx || isSnowBridge ? undefined : bridge,
-    reset: () => {
-      setTxState(null)
-      setTxHash("")
-      sendTx.reset()
-    },
+    isBroadcasted,
   }
 }
 
@@ -318,6 +343,42 @@ export const usePendingDispatchPermit = (
   )
 }
 
+const getTransactionData = (
+  result: ISubmittableResult,
+  xcallMeta?: Record<string, string>,
+) => {
+  const status = result.status
+  const txHash = result.txHash.toHex()
+
+  const srcChain = chainsMap.get(xcallMeta?.srcChain ?? "hydration")
+
+  const xcmDstChain = xcallMeta?.dstChain
+    ? chainsMap.get(xcallMeta.dstChain)
+    : undefined
+
+  const link =
+    txHash && srcChain
+      ? createSubscanLink("extrinsic", txHash, srcChain.key)
+      : undefined
+
+  const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
+
+  const bridge =
+    xcmDstChain?.isEvmChain() && !isSnowBridge ? "substrate" : undefined
+
+  const xcm: "substrate" | undefined = xcallMeta ? "substrate" : undefined
+
+  return {
+    status,
+    txHash,
+    srcChain,
+    xcmDstChain,
+    link,
+    bridge,
+    xcm,
+  }
+}
+
 export const useSendDispatchPermit = (
   options: MutationObserverOptions<
     ISubmittableResult,
@@ -326,19 +387,24 @@ export const useSendDispatchPermit = (
       permit: PermitResult
     }
   > = {},
+  id: string,
+  toast?: ToastMessage,
   xcallMeta?: Record<string, string>,
 ) => {
   const { api } = useRpcProvider()
   const { wallet } = useWallet()
+  const { t } = useTranslation()
+  const { loading, success, error, remove, sidebar } = useToast()
   const queryClient = useQueryClient()
-  const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
-  const [txHash, setTxHash] = useState<string>("")
+  const [isBroadcasted, setIsBroadcasted] = useState(false)
 
-  const isMounted = useMountedState()
+  const unsubscribeRef = useRef<null | (() => void)>(null)
 
   const sendTx = useMutation(async ({ permit }) => {
     return await new Promise(async (resolve, reject) => {
       try {
+        let isLoadingNotified = false
+
         const extrinsic = api.tx.multiTransactionPayment.dispatchPermit(
           permit.message.from,
           permit.message.to,
@@ -355,9 +421,24 @@ export const useSendDispatchPermit = (
 
           const isInBlock = result.status.type === "InBlock"
 
-          if (isMounted()) {
-            setTxHash(result.txHash.toHex())
-            setTxState(result.status.type)
+          const { status, txHash, link, bridge, xcm } = getTransactionData(
+            result,
+            xcallMeta,
+          )
+
+          if (status.isBroadcast && txHash && !isLoadingNotified) {
+            loading({
+              id,
+              title: toast?.onLoading ?? <p>{t("toast.pending")}</p>,
+              link,
+              txHash,
+              bridge,
+              hidden: true,
+              xcm,
+            })
+
+            isLoadingNotified = true
+            setIsBroadcasted(true)
           }
 
           const account = new H160(permit.message.from).toAccount()
@@ -380,10 +461,30 @@ export const useSendDispatchPermit = (
           })
 
           const onComplete = createResultOnCompleteHandler(api, {
-            onError: async (error) => {
-              reject(error)
+            onError: async (e) => {
+              error({
+                title: toast?.onError ?? <p>{t("toast.error")}</p>,
+                link,
+                txHash,
+                hidden: sidebar,
+              })
+
+              remove(id)
+
+              reject(e)
             },
             onSuccess: async (result) => {
+              if (!xcm) {
+                success({
+                  title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
+                  link,
+                  txHash,
+                  hidden: sidebar,
+                })
+
+                remove(id)
+              }
+
               resolve(result)
             },
             onSettled: async () => {
@@ -404,9 +505,15 @@ export const useSendDispatchPermit = (
             },
           })
 
+          unsubscribeRef.current = unsubscribe
+
           return onComplete(result)
         })
       } catch (err) {
+        error({
+          title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
+          hidden: sidebar,
+        })
         reject(
           new TransactionError(
             err?.toString() ?? "Unknown error",
@@ -417,33 +524,15 @@ export const useSendDispatchPermit = (
     })
   }, options)
 
-  const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
-
-  const destChain = xcallMeta?.dstChain
-    ? chainsMap.get(xcallMeta.dstChain)
-    : undefined
-
-  const srcChain = chainsMap.get(xcallMeta?.srcChain ?? "hydration")
-
-  const txLink =
-    txHash && srcChain
-      ? createSubscanLink("extrinsic", txHash, srcChain.key)
-      : undefined
-
-  const bridge =
-    destChain?.isEvmChain() && !isSnowBridge ? "substrate" : undefined
+  useEffect(() => {
+    return () => {
+      unsubscribeRef.current?.()
+    }
+  }, [])
 
   return {
     ...sendTx,
-    txState,
-    txLink,
-    txHash,
-    bridge,
-    reset: () => {
-      setTxState(null)
-      setTxHash("")
-      sendTx.reset()
-    },
+    isBroadcasted,
   }
 }
 
@@ -455,47 +544,90 @@ export const useSendTransactionMutation = (
       tx: SubmittableExtrinsic<"promise">
     }
   > = {},
+  id: string,
+  toast?: ToastMessage,
   xcallMeta?: Record<string, string>,
 ) => {
   const { api } = useRpcProvider()
-  const isMounted = useMountedState()
-  const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
-  const [txHash, setTxHash] = useState<string>("")
+  const { t } = useTranslation()
+  const { loading, success, error, remove, sidebar } = useToast()
+  const [isBroadcasted, setIsBroadcasted] = useState(false)
+
+  const unsubscribeRef = useRef<null | (() => void)>(null)
 
   const sendTx = useMutation(async ({ tx }) => {
     return await new Promise(async (resolve, reject) => {
       try {
+        let isLoadingNotified = false
+
         const unsubscribe = await tx.send(async (result) => {
           if (!result || !result.status) return
 
-          if (isMounted()) {
-            setTxHash(result.txHash.toHex())
-            setTxState(result.status.type)
+          const { status, txHash, srcChain, link, bridge, xcm } =
+            getTransactionData(result, xcallMeta)
+
+          if (status.isBroadcast && txHash && !isLoadingNotified) {
+            loading({
+              id,
+              title: toast?.onLoading ?? <p>{t("toast.pending")}</p>,
+              link,
+              txHash,
+              bridge,
+              hidden: true,
+              xcm,
+            })
+
+            isLoadingNotified = true
+            setIsBroadcasted(true)
           }
 
-          const externalChain =
-            xcallMeta?.srcChain && xcallMeta.srcChain !== "hydration"
-              ? chainsMap.get(xcallMeta?.srcChain)
-              : null
-
           const apiPromise =
-            externalChain && isAnyParachain(externalChain)
-              ? await externalChain.api
+            xcallMeta &&
+            srcChain &&
+            xcallMeta.srcChain !== "hydration" &&
+            isAnyParachain(srcChain)
+              ? await srcChain.api
               : api
 
           const onComplete = createResultOnCompleteHandler(apiPromise, {
-            onError: (error) => {
-              reject(error)
+            onError: (e) => {
+              error({
+                title: toast?.onError ?? <p>{t("toast.error")}</p>,
+                link,
+                txHash,
+                hidden: sidebar,
+              })
+
+              remove(id)
+
+              reject(e)
             },
             onSuccess: (result) => {
+              if (!xcm) {
+                success({
+                  title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
+                  link,
+                  txHash,
+                  hidden: sidebar,
+                })
+
+                remove(id)
+              }
+
               resolve(result)
             },
             onSettled: unsubscribe,
           })
 
+          unsubscribeRef.current = unsubscribe
+
           return onComplete(result)
         })
       } catch (err) {
+        error({
+          title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
+          hidden: sidebar,
+        })
         reject(
           new TransactionError(err?.toString() ?? "Unknown error", {
             method: getTransactionJSON(tx)?.method,
@@ -507,33 +639,15 @@ export const useSendTransactionMutation = (
     })
   }, options)
 
-  const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
-
-  const destChain = xcallMeta?.dstChain
-    ? chainsMap.get(xcallMeta.dstChain)
-    : undefined
-
-  const srcChain = chainsMap.get(xcallMeta?.srcChain ?? "hydration")
-
-  const txLink =
-    txHash && srcChain
-      ? createSubscanLink("extrinsic", txHash, srcChain.key)
-      : undefined
-
-  const bridge =
-    destChain?.isEvmChain() && !isSnowBridge ? "substrate" : undefined
+  useEffect(() => {
+    return () => {
+      unsubscribeRef.current?.()
+    }
+  }, [])
 
   return {
     ...sendTx,
-    txState,
-    txLink,
-    txHash,
-    bridge,
-    reset: () => {
-      setTxState(null)
-      setTxHash("")
-      sendTx.reset()
-    },
+    isBroadcasted,
   }
 }
 
@@ -652,7 +766,19 @@ const useStoreExternalAssetsOnSign = () => {
   )
 }
 
-export const useSendTx = (xcallMeta?: Record<string, string>) => {
+export const useSendTx = ({
+  id,
+  toast,
+  onSuccess,
+  onError,
+  xcallMeta,
+}: {
+  id: string
+  toast?: ToastMessage
+  onSuccess?: (data: ISubmittableResult) => void
+  onError?: () => void
+  xcallMeta?: Record<string, string>
+}) => {
   const [txType, setTxType] = useState<"default" | "evm" | "permit" | null>(
     null,
   )
@@ -667,8 +793,14 @@ export const useSendTx = (xcallMeta?: Record<string, string>) => {
         storeExternalAssetsOnSign(getAssetIdsFromTx(tx))
         setTxType("default")
       },
-      onSuccess: boundReferralToast.onSuccess,
+      onSuccess: (data) => {
+        boundReferralToast.onSuccess()
+        onSuccess?.(data)
+      },
+      onError: () => onError?.(),
     },
+    id,
+    toast,
     xcallMeta,
   )
 
@@ -681,8 +813,14 @@ export const useSendTx = (xcallMeta?: Record<string, string>) => {
         }
         setTxType("evm")
       },
-      onSuccess: boundReferralToast.onSuccess,
+      onSuccess: (data) => {
+        boundReferralToast.onSuccess()
+        onSuccess?.(data)
+      },
+      onError: () => onError?.(),
     },
+    id,
+    toast,
     xcallMeta,
   )
 
@@ -691,7 +829,11 @@ export const useSendTx = (xcallMeta?: Record<string, string>) => {
       onMutate: () => {
         setTxType("permit")
       },
+      onSuccess: (data) => onSuccess?.(data),
+      onError: () => onError?.(),
     },
+    id,
+    toast,
     xcallMeta,
   )
 
