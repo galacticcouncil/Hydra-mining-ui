@@ -2294,14 +2294,14 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^5.7.1":
-  version "5.7.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-5.7.1.tgz#6675625ddafbb3937233b7318ce6104975dda669"
-  integrity sha512-Be+lNGcfx96Q3wWpaC460AcNcSawJNJrPF8FgIXmoFcXTFcCXzG/Ut75CYGv67Z/3Z//jjIVXJFB5X08QlmVPw==
+"@galacticcouncil/xcm-cfg@6.1.0-pr97-a8f6aae":
+  version "6.1.0-pr97-a8f6aae"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-6.1.0-pr97-a8f6aae.tgz#7ac3cde5332caec1358975e2d3cfb8e7e2f7f788"
+  integrity sha512-AE3ItNstt0rOE3+cjKLpwKCnjrYmil0j5tuTWDmIu//FdfGiUmGVTkEujGYoe7yUY9Afl98/6JLBAiuqb8M0bg==
   dependencies:
-    "@galacticcouncil/xcm-core" "^5.4.0"
+    "@galacticcouncil/xcm-core" "^5.5.0"
 
-"@galacticcouncil/xcm-core@^5.4.0":
+"@galacticcouncil/xcm-core@^5.4.0", "@galacticcouncil/xcm-core@^5.5.0":
   version "5.4.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-5.4.0.tgz#aa6683f0c1695c76f8751f09f32ffef6b7c06e84"
   integrity sha512-ytWGlwOSvDyZSHLjvAlOlZw3PS39g5wEHK5dX4NrsQTK6keVeGMk83+4mKPGCnfWO5YRhAuIJ7fcpp6eBPdHlQ==
