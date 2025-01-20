@@ -1,6 +1,11 @@
 import { u32 } from "@polkadot/types-codec"
 import { useQuery } from "@tanstack/react-query"
-import { useSpotPrice, useSpotPrices } from "api/spotPrice"
+import {
+  useNewSpotPrice,
+  useNewSpotPrices,
+  useSpotPrice,
+  useSpotPrices,
+} from "api/spotPrice"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 import { create } from "zustand"
@@ -29,6 +34,64 @@ export const useDisplayValue = (props: Props) => {
   }, [props.amount, displayAsset, spotPrice.data])
 
   return { amount, symbol, isLoading }
+}
+
+export const useNewDisplayPrice = (id?: string) => {
+  const displayAsset = useDisplayAssetStore()
+  const { data: spotPrice, isInitialLoading: isSpotPriceInitialLoading } =
+    useNewSpotPrice(id?.toString(), displayAsset.id)
+
+  const { data: usdPrice, isInitialLoading: isUsdPriceInitialLoading } =
+    useCoingeckoUsdPrice()
+
+  const isLoading = isSpotPriceInitialLoading || isUsdPriceInitialLoading
+  const data = useMemo(() => {
+    if (isLoading) return undefined
+
+    if (displayAsset.isRealUSD && usdPrice)
+      return spotPrice
+        ? {
+            ...spotPrice,
+            spotPrice: BigNumber(spotPrice.spotPrice)
+              .times(usdPrice)
+              .toString(),
+          }
+        : undefined
+
+    return spotPrice
+  }, [displayAsset.isRealUSD, isLoading, spotPrice, usdPrice])
+
+  return { data, isLoading, isInitialLoading: isLoading }
+}
+
+export const useNewDisplayPrices = (ids: string[], noRefresh?: boolean) => {
+  const displayAsset = useDisplayAssetStore()
+  const spotPrices = useNewSpotPrices(ids, displayAsset.id, noRefresh)
+  const { data: usdPrice, isInitialLoading: isUsdPriceInitialLoading } =
+    useCoingeckoUsdPrice()
+
+  const isLoading =
+    spotPrices.some((q) => q.isInitialLoading) || isUsdPriceInitialLoading
+
+  const data = useMemo(() => {
+    if (isLoading) return undefined
+
+    if (displayAsset.isRealUSD && usdPrice)
+      return spotPrices.map((sp) =>
+        sp.data
+          ? {
+              ...sp.data,
+              spotPrice: BigNumber(sp.data.spotPrice)
+                .times(usdPrice)
+                .toString(),
+            }
+          : undefined,
+      )
+
+    return spotPrices.map((sp) => sp.data)
+  }, [displayAsset.isRealUSD, isLoading, spotPrices, usdPrice])
+
+  return { data, isLoading, isInitialLoading: isLoading }
 }
 
 export const useDisplayPrice = (id: string | u32 | undefined) => {

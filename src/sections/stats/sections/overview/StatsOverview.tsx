@@ -59,7 +59,7 @@ export const StatsOverview = () => {
 
 export const StatsOverviewData = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const omnipoolOverview = useOmnipoolAssetDetails("tvl")
+  const omnipoolOverview = useOmnipoolAssetDetails()
 
   return (
     <>

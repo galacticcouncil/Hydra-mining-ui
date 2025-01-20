@@ -97,6 +97,17 @@ export const QUERY_KEYS = {
   exchangeFee: [QUERY_KEY_PREFIX, "exchangeFee"],
   calculateTotalLiqInPools: [QUERY_KEY_PREFIX, "totalLiqInPools"],
   spotPrice: (assetA: string, assetB: string) => ["spotPrice", assetA, assetB],
+  newSpotPrice: (assetA: string, assetB: string) => [
+    "newSpotPrice",
+    assetA,
+    assetB,
+  ],
+  newSpotPriceLive: (assetA: string, assetB: string) => [
+    QUERY_KEY_PREFIX,
+    "newSpotPrice",
+    assetA,
+    assetB,
+  ],
   spotPriceLive: (assetA: string, assetB: string) => [
     QUERY_KEY_PREFIX,
     "spotPrice",
@@ -226,6 +237,7 @@ export const QUERY_KEYS = {
     return key
   },
   hdxSupply: ["hdxSupply"],
+  treasuryBalances: ["treasuryBalances"],
   stake: (address: string | undefined) => ["stake", address],
   staking: ["staking"],
   stakingPosition: (id: number | undefined) => ["totalStaking", id],

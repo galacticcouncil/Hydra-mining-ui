@@ -43,6 +43,7 @@ export const PieChart = <T extends DataEntry>({
 }: PieChartProps<T>) => {
   const getValue = (dataEntry: T): BN => {
     const propValue = dataEntry[property]
+
     return BN.isBigNumber(propValue) && !propValue.isNaN() ? propValue : BN_0
   }
 
@@ -85,20 +86,20 @@ export const PieChart = <T extends DataEntry>({
 
         if (restAssets) {
           const assets = [
-            ...(restAssets.assets ?? []),
             {
               name: omnipoolAsset.name,
               percentage,
               value: getValue(omnipoolAsset),
               id: omnipoolAsset.id,
             },
+            ...(restAssets.assets ?? []),
           ]
 
           const label = (
             <SliceLabelRest
               key={percentage}
               assets={assets}
-              property={property}
+              property={property.toString()}
             />
           )
 
@@ -125,7 +126,7 @@ export const PieChart = <T extends DataEntry>({
             <SliceLabelRest
               key={percentage}
               assets={assets}
-              property={property}
+              property={property.toString()}
             />
           )
 
@@ -145,5 +146,11 @@ export const PieChart = <T extends DataEntry>({
     }, [])
     .sort((a) => (a.symbol !== "rest" ? -1 : 0))
 
-  return <DoughnutChart slices={slices} label={label} property={property} />
+  return (
+    <DoughnutChart
+      slices={slices}
+      label={label}
+      property={property.toString()}
+    />
+  )
 }

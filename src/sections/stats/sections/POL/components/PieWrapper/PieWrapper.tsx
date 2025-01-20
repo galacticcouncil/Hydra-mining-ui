@@ -5,7 +5,7 @@ import { theme } from "theme"
 import { useMemo, useState } from "react"
 import { SContainerVertical } from "sections/stats/StatsPage.styled"
 import { PieTotalValue } from "sections/stats/sections/overview/components/PieTotalValue/PieTotalValue"
-import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
+import { TTreasuryAsset } from "sections/stats/StatsPage.utils"
 import { PieChart } from "sections/stats/components/PieChart/PieChart"
 import { useTranslation } from "react-i18next"
 import { omit } from "utils/rx"
@@ -13,10 +13,10 @@ import { ChartsWrapper } from "sections/stats/sections/POL/components/ChartsWrap
 import BN from "bignumber.js"
 
 type PieWrapperProps = {
-  data: TUseOmnipoolAssetDetailsData
-  POLMultiplier: BN
-  totalVolume: BN
-  totalPol: BN
+  data: TTreasuryAsset[]
+  POLMultiplier: string
+  totalVolume: string
+  totalPol: string
   isLoading: boolean
 }
 
@@ -35,7 +35,12 @@ export const PieWrapper = ({
   )
 
   const pieChartData = useMemo(
-    () => data.map((props) => omit(["iconIds", "farms"], props)),
+    () =>
+      data.map((props) => {
+        const newData = omit(["iconIds"], props)
+
+        return { ...newData, valueDisplay: BN(newData.valueDisplay) }
+      }),
     [data],
   )
 
@@ -56,7 +61,7 @@ export const PieWrapper = ({
       >
         <PieTotalValue
           title={t("stats.pol.volume")}
-          data={totalVolume.div(2).multipliedBy(POLMultiplier)}
+          data={BN(totalVolume).div(2).multipliedBy(POLMultiplier).toString()}
           isLoading={isLoading}
         />
       </div>
@@ -77,7 +82,7 @@ export const PieWrapper = ({
       {activeSection === "overview" ? (
         <>
           {!isLoading ? (
-            <PieChart data={pieChartData} property="pol" />
+            <PieChart data={pieChartData} property="valueDisplay" />
           ) : (
             <PieSkeleton />
           )}

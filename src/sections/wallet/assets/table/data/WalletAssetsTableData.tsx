@@ -20,7 +20,6 @@ export const WalletAssetsTableBalance = (props: {
         flex: "column",
         align: ["end", "start"],
         gap: 2,
-        width: "fit-content",
       }}
       onClick={(e) => {
         e.preventDefault()

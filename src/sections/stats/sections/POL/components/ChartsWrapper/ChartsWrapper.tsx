@@ -3,11 +3,10 @@ import { StatsTimeframe } from "api/stats"
 import { Charts } from "./Charts"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
-import BN from "bignumber.js"
 
 export type ChartType = "pol" | "volume"
 
-type Props = { assetId?: string; POLMultiplier: BN }
+type Props = { assetId?: string; POLMultiplier: string }
 
 export const ChartsWrapper = ({ assetId, POLMultiplier }: Props) => {
   const { t } = useTranslation()

@@ -13,7 +13,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
 import { parseBalanceData, TBalance } from "./balances"
-import { TAsset, TShareToken, useAssets } from "providers/assets"
+import { TAsset, TBond, TShareToken, useAssets } from "providers/assets"
 import { millisecondsInHour } from "date-fns/constants"
 import { getAccountBalanceData } from "api/accountBalances"
 
@@ -181,7 +181,7 @@ const parseDepositData = (
 export const useAccountAssets = (givenAddress?: string) => {
   const { account } = useAccount()
   const { api, isLoaded } = useRpcProvider()
-  const { getAssetWithFallback, getShareTokenByAddress, isShareToken } =
+  const { getAssetWithFallback, getShareTokenByAddress, isShareToken, isBond } =
     useAssets()
 
   const address = givenAddress ?? account?.address
@@ -305,6 +305,11 @@ export const useAccountAssets = (givenAddress?: string) => {
           { balance: TBalance; asset: TAsset }
         > = new Map([])
 
+        const accountBondsMap: Map<
+          string,
+          { balance: TBalance; asset: TBond }
+        > = new Map([])
+
         const accountAssetsMap = balances.reduce<Map<string, TAccountAsset>>(
           (acc, balance) => {
             if (BN(balance.total).gt(0)) {
@@ -325,6 +330,12 @@ export const useAccountAssets = (givenAddress?: string) => {
 
               if (asset.isStableSwap)
                 accountStableswapMap.set(balance.assetId, {
+                  balance,
+                  asset,
+                })
+
+              if (isBond(asset))
+                accountBondsMap.set(balance.assetId, {
                   balance,
                   asset,
                 })
@@ -417,6 +428,7 @@ export const useAccountAssets = (givenAddress?: string) => {
           accountAssetsMap,
           accountShareTokensMap,
           accountStableswapMap,
+          accountBondsMap,
           isAnyPoolPositions,
         }
       },

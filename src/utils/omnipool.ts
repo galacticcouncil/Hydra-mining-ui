@@ -5,7 +5,7 @@ import {
 import { useOmnipoolDataObserver } from "api/omnipool"
 import BN from "bignumber.js"
 import { BN_NAN } from "utils/constants"
-import { useDisplayPrices, useDisplayPrice } from "./displayAsset"
+import { useNewDisplayPrice, useNewDisplayPrices } from "./displayAsset"
 import { scale } from "./balance"
 import { useCallback } from "react"
 import { useAssets } from "providers/assets"
@@ -26,8 +26,8 @@ export const useLiquidityPositionData = (assetsId?: string[]) => {
   const omnipoolAssets = useOmnipoolDataObserver()
   const omnipoolAssetIds = omnipoolAssets.data?.map((asset) => asset.id) ?? []
 
-  const hubSp = useDisplayPrice(hub.id)
-  const spotPrices = useDisplayPrices(assetsId ?? omnipoolAssetIds)
+  const hubSp = useNewDisplayPrice(hub.id)
+  const spotPrices = useNewDisplayPrices(assetsId ?? omnipoolAssetIds)
 
   const getData = useCallback(
     (position: TOmnipoolPosition, options?: IOptions) => {

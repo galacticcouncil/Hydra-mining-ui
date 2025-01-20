@@ -8,7 +8,7 @@ import { BN_BILL } from "utils/constants"
 
 type PieTotalValueProps = {
   title: string
-  data: BN
+  data: string
   isLoading: boolean
 }
 
@@ -27,7 +27,7 @@ export const PieTotalValue = ({
       <Text color="brightBlue300">{title}</Text>
       <div sx={{ flex: "row", align: "baseline", gap: 4 }}>
         <Text fs={[20, 42]}>
-          <DisplayValue value={data} isUSD compact={data.gt(BN_BILL)} />
+          <DisplayValue value={BN(data)} isUSD compact={BN(data).gt(BN_BILL)} />
         </Text>
       </div>
     </div>

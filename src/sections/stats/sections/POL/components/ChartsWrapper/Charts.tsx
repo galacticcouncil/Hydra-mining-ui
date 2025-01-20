@@ -13,7 +13,7 @@ export const Charts = ({
   type: ChartType
   timeframe: StatsTimeframe
   assetId?: string
-  POLMultiplier?: BN
+  POLMultiplier?: string
 }) => {
   const stats = useStats({
     timeframe,
@@ -24,9 +24,9 @@ export const Charts = ({
   const multiplieriedVolumeData = POLMultiplier
     ? stats.data?.map((statsValue) => ({
         ...statsValue,
-        volume_usd: POLMultiplier.multipliedBy(
-          statsValue.volume_usd,
-        ).toNumber(),
+        volume_usd: BN(POLMultiplier)
+          .multipliedBy(statsValue.volume_usd)
+          .toNumber(),
       }))
     : stats.data
 

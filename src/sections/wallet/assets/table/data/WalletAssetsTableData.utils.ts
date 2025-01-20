@@ -3,7 +3,7 @@ import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { BN_0, BN_NAN, PARACHAIN_BLOCK_TIME } from "utils/constants"
 import { arraySearch, sortAssets } from "utils/helpers"
-import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
+import { useDisplayPrice, useNewDisplayPrices } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAcceptedCurrencies, useAccountCurrency } from "api/payments"
@@ -74,7 +74,7 @@ export const useAssetsData = ({
   const { data: acceptedCurrencies } =
     useAcceptedCurrencies(tokensWithBalanceIds)
 
-  const spotPrices = useDisplayPrices(tokensWithBalanceIds)
+  const spotPrices = useNewDisplayPrices(tokensWithBalanceIds)
 
   const allAssets = useMemo(
     () => [...tokens, ...stableswap, ...external, ...erc20],
@@ -102,21 +102,24 @@ export const useAssetsData = ({
       )?.spotPrice
 
       const reserved = BigNumber(balance.reservedBalance).shiftedBy(-decimals)
-      const reservedDisplay = spotPrice?.isFinite()
-        ? reserved.times(spotPrice).toString()
-        : undefined
+      const reservedDisplay =
+        spotPrice && BigNumber(spotPrice).isFinite()
+          ? reserved.times(spotPrice).toString()
+          : undefined
 
       const total = BigNumber(balance.total).shiftedBy(-decimals)
-      const totalDisplay = spotPrice?.isFinite()
-        ? total.times(spotPrice).toString()
-        : undefined
+      const totalDisplay =
+        spotPrice && BigNumber(spotPrice).isFinite()
+          ? total.times(spotPrice).toString()
+          : undefined
 
       const transferable = isExternalInvalid
         ? BN_NAN
         : BigNumber(balance.balance).shiftedBy(-decimals)
-      const transferableDisplay = spotPrice?.isFinite()
-        ? transferable.times(spotPrice).toString()
-        : undefined
+      const transferableDisplay =
+        spotPrice && BigNumber(spotPrice).isFinite()
+          ? transferable.times(spotPrice).toString()
+          : undefined
 
       const isAcceptedCurrency = !!acceptedCurrencies?.find(
         (acceptedCurrencie) => acceptedCurrencie.id === id,

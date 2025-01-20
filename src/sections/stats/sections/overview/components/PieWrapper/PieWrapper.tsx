@@ -6,11 +6,14 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useMemo, useState } from "react"
 import { SContainerVertical } from "sections/stats/StatsPage.styled"
-import { BN_0 } from "utils/constants"
 import { useTranslation } from "react-i18next"
 import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
-import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
+import {
+  TUseOmnipoolAssetDetailsData,
+  useTreasuryAssets,
+} from "sections/stats/StatsPage.utils"
 import { omit } from "utils/rx"
+import BN from "bignumber.js"
 
 type PieWrapperProps = {
   data: TUseOmnipoolAssetDetailsData
@@ -18,8 +21,9 @@ type PieWrapperProps = {
   className?: string
 }
 
-export const PieWrapper = ({ data, isLoading, className }: PieWrapperProps) => {
+export const PieWrapper = ({ data, className }: PieWrapperProps) => {
   const { t } = useTranslation()
+  const { isLoading, total, totalTvl, totalVolume } = useTreasuryAssets()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [activeSection, setActiveSection] = useState<"overview" | "chart">(
     "overview",
@@ -29,25 +33,7 @@ export const PieWrapper = ({ data, isLoading, className }: PieWrapperProps) => {
     [data],
   )
 
-  const isLoadingVolume = !!data?.some((pool) => pool.isLoadingVolume)
-
-  const { totalTvl, totalPol, totalVolume } = useMemo(() => {
-    return data.reduce(
-      (acc, omnipoolAsset) => {
-        acc = {
-          totalTvl: acc.totalTvl.plus(
-            omnipoolAsset.tvl.isNaN() ? 0 : omnipoolAsset.tvl,
-          ),
-          totalPol: acc.totalPol.plus(omnipoolAsset.pol),
-          totalVolume: acc.totalVolume.plus(
-            omnipoolAsset.volume.isNaN() ? 0 : omnipoolAsset.volume,
-          ),
-        }
-        return acc
-      },
-      { totalTvl: BN_0, totalPol: BN_0, totalVolume: BN_0 },
-    )
-  }, [data])
+  const isLoadingVolume = data?.some((pool) => pool.isLoadingVolume)
 
   const pieChartValues = (
     <div sx={{ flex: "column", gap: 20 }}>
@@ -67,12 +53,12 @@ export const PieWrapper = ({ data, isLoading, className }: PieWrapperProps) => {
       >
         <PieTotalValue
           title={t("stats.overview.pie.values.pol")}
-          data={totalPol}
+          data={total ?? "0"}
           isLoading={isLoading}
         />
         <PieTotalValue
           title={t("stats.overview.pie.values.volume")}
-          data={totalVolume.div(2)}
+          data={BN(totalVolume).div(2).toString()}
           isLoading={isLoading || isLoadingVolume}
         />
       </div>

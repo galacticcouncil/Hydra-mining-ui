@@ -1,73 +1,314 @@
 import { useOmnipoolDataObserver } from "api/omnipool"
-import { useSpotPrices } from "api/spotPrice"
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { HYDRA_TREASURE_ACCOUNT } from "utils/api"
-import { getFloatingPointAmount, scaleHuman } from "utils/balance"
+import { scaleHuman } from "utils/balance"
 import { BN_0, BN_NAN } from "utils/constants"
-import { useDisplayAssetStore } from "utils/displayAsset"
-import { isNotNil } from "utils/helpers"
-import { useFee, useTVL } from "api/stats"
+import { useNewDisplayPrices } from "utils/displayAsset"
+import { useFee, useTreasuryBalances, useTVL } from "api/stats"
 import { useOmnipoolVolumes } from "api/volume"
 import { useLiquidityPositionData } from "utils/omnipool"
 import { useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
 import { useOmnipoolFarms } from "api/farms"
+import { useAssetsData } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
+import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 
 const withoutRefresh = true
 
-export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
-  const { native, getAssetWithFallback } = useAssets()
-  const accountAssets = useAccountAssets(HYDRA_TREASURE_ACCOUNT)
-  const omnipoolAssets = useOmnipoolDataObserver()
-  const { getData } = useLiquidityPositionData()
-  const displayAsset = useDisplayAssetStore()
+export type TTreasuryAsset = {
+  value: string
+  valueDisplay: string
+  id: string
+  symbol: string
+  iconIds: string[] | string
+  name: string
+}
 
-  const omnipoolAssetsIds =
-    omnipoolAssets.data?.map((a) => a.id.toString()) ?? []
+export const useTreasuryAssets = () => {
+  const { native, getAssetWithFallback } = useAssets()
+  const { data: treasuryBalances } = useTreasuryBalances()
+
+  const { data: accountAssets, isLoading: isAccountsAssetsLoading } =
+    useAccountAssets(HYDRA_TREASURE_ACCOUNT)
+
+  const { data: treasutyAssets, isLoading: isAssetsDataLoading } =
+    useAssetsData({
+      address: HYDRA_TREASURE_ACCOUNT,
+    })
+  const { data: omnipoolAssets, isLoading: isOmnipoolAssetsLoading } =
+    useOmnipoolAssetDetails()
+  const { data: positions, isLoading: isPositionsLoading } =
+    useOmnipoolPositionsData({
+      address: HYDRA_TREASURE_ACCOUNT,
+    })
+  const { getData } = useLiquidityPositionData()
+
+  const bonds = Array.from(accountAssets?.accountBondsMap.values() ?? [])
+
+  const { data: spotPrices, isLoading: isSpotPriceLoading } =
+    useNewDisplayPrices([
+      ...bonds.map((bond) => bond.asset.id),
+      treasuryBalances?.id ?? "0",
+    ])
+
+  const isLoading =
+    isAccountsAssetsLoading ||
+    isAssetsDataLoading ||
+    isOmnipoolAssetsLoading ||
+    isPositionsLoading ||
+    isSpotPriceLoading
+
+  const bondAssets: TTreasuryAsset[] | undefined = useMemo(() => {
+    if (spotPrices && bonds) {
+      return bonds.map((bond) => {
+        const spotPrice =
+          spotPrices.find((spotPrice) => spotPrice?.tokenIn === bond.asset.id)
+            ?.spotPrice ?? BN_NAN
+
+        const value = scaleHuman(bond.balance.total, bond.asset.decimals)
+
+        return {
+          value: value.toString(),
+          valueDisplay: value.times(spotPrice).toString(),
+          id: bond.asset.id,
+          symbol: bond.asset.symbol,
+          iconIds: bond.asset.iconId,
+          name: bond.asset.name,
+        }
+      })
+    }
+  }, [bonds, spotPrices])
+
+  const combinedAssets = useMemo(() => {
+    if (treasutyAssets && omnipoolAssets && treasuryBalances) {
+      const map: Map<string, TTreasuryAsset> = new Map()
+
+      treasutyAssets.forEach((asset) => {
+        if (asset.totalDisplay && BN(asset.totalDisplay).gt(50)) {
+          map.set(asset.id, {
+            value: asset.total,
+            valueDisplay: asset.totalDisplay,
+            id: asset.id,
+            symbol: asset.symbol,
+            iconIds: asset.meta.iconId,
+            name: asset.meta.name,
+          })
+        }
+      })
+
+      omnipoolAssets.forEach((asset) => {
+        const mapValue = map.get(asset.id)
+        if (asset.polDisplay.gt(50)) {
+          if (mapValue) {
+            map.set(asset.id, {
+              ...mapValue,
+              value: BN(mapValue.value).plus(asset.pol).toString(),
+              valueDisplay: BN(mapValue.valueDisplay)
+                .plus(asset.polDisplay)
+                .toString(),
+            })
+          } else {
+            map.set(asset.id, {
+              value: asset.pol.toString(),
+              valueDisplay: asset.polDisplay.toString(),
+              id: asset.id,
+              symbol: asset.symbol,
+              iconIds: asset.iconIds,
+              name: asset.name,
+            })
+          }
+        }
+      })
+
+      const treasuryAsset = map.get(treasuryBalances.id)
+      const treasuryMeta = getAssetWithFallback(treasuryBalances.id)
+      const treasurySpotPrice = spotPrices?.find(
+        (spotPrice) => spotPrice?.tokenIn === treasuryBalances.id,
+      )?.spotPrice
+      const value = BN(treasuryBalances.balance).shiftedBy(
+        -treasuryMeta.decimals,
+      )
+      const valueDisplay = value.times(treasurySpotPrice ?? BN_NAN).toString()
+
+      map.set(
+        treasuryBalances.id,
+        treasuryAsset
+          ? {
+              ...treasuryAsset,
+              value: BN(treasuryAsset.value).plus(value).toString(),
+              valueDisplay: BN(treasuryAsset.valueDisplay)
+                .plus(valueDisplay)
+                .toString(),
+            }
+          : {
+              id: treasuryMeta.id,
+              symbol: treasuryMeta.symbol,
+              iconIds: treasuryMeta.iconId,
+              value: value.toString(),
+              valueDisplay,
+              name: treasuryMeta.name,
+            },
+      )
+
+      return Array.from(map.values()).sort((assetA, assetB) => {
+        if (assetA.id === native.id) {
+          return -1
+        }
+
+        if (assetB.id === native.id) {
+          return 1
+        }
+
+        return BN(assetA.valueDisplay).gt(assetB.valueDisplay) ? -1 : 1
+      })
+    }
+  }, [
+    treasutyAssets,
+    omnipoolAssets,
+    native.id,
+    getAssetWithFallback,
+    spotPrices,
+    treasuryBalances,
+  ])
+
+  const liquidityPositions = useMemo(() => {
+    return Array.from(
+      positions
+        .reduce<Map<string, TTreasuryAsset>>((acc, position) => {
+          const data = getData(position)
+
+          if (data) {
+            const assetId = position.assetId
+
+            const mapValue = acc.get(assetId)
+
+            if (mapValue) {
+              acc.set(assetId, {
+                ...mapValue,
+                value: BN(mapValue.value).plus(data.valueShifted).toString(),
+                valueDisplay: BN(mapValue.valueDisplay)
+                  .plus(data.valueDisplay)
+                  .toString(),
+              })
+            } else {
+              acc.set(assetId, {
+                id: assetId,
+                symbol: position.symbol,
+                iconIds: position.meta.iconId,
+                value: data.valueShifted.toString(),
+                valueDisplay: data.valueDisplay.toString(),
+                name: position.name,
+              })
+            }
+          }
+
+          return acc
+        }, new Map([]))
+        .values(),
+    )
+  }, [getData, positions])
+
+  const assetsTotalDisplay = useMemo(() => {
+    return combinedAssets?.reduce(
+      (acc, asset) => BN(acc).plus(asset.valueDisplay).toString(),
+      "0",
+    )
+  }, [combinedAssets])
+
+  const liquidityPositionsTotalDisplay = useMemo(() => {
+    return liquidityPositions.reduce(
+      (acc, asset) => BN(acc).plus(asset.valueDisplay).toString(),
+      "0",
+    )
+  }, [liquidityPositions])
+
+  const bondsTotalDisplay = useMemo(() => {
+    return bondAssets?.reduce(
+      (acc, asset) => BN(acc).plus(asset.valueDisplay).toString(),
+      "0",
+    )
+  }, [bondAssets])
+
+  const total = useMemo(() => {
+    if (
+      assetsTotalDisplay &&
+      liquidityPositionsTotalDisplay &&
+      bondsTotalDisplay
+    ) {
+      return BN(assetsTotalDisplay)
+        .plus(liquidityPositionsTotalDisplay)
+        .plus(bondsTotalDisplay)
+        .toString()
+    }
+  }, [assetsTotalDisplay, liquidityPositionsTotalDisplay, bondsTotalDisplay])
+
+  const { totalTvl, totalVolume, POLMultiplier } = useMemo(() => {
+    const { totalTvl, totalPol, totalVolume } = omnipoolAssets.reduce(
+      (acc, omnipoolAsset) => {
+        acc = {
+          totalTvl: acc.totalTvl.plus(
+            omnipoolAsset.tvl.isNaN() ? 0 : omnipoolAsset.tvl,
+          ),
+          totalPol: acc.totalPol.plus(omnipoolAsset.polDisplay),
+          totalVolume: acc.totalVolume.plus(
+            omnipoolAsset.volume.isNaN() ? 0 : omnipoolAsset.volume,
+          ),
+        }
+        return acc
+      },
+      { totalTvl: BN_0, totalPol: BN_0, totalVolume: BN_0 },
+    )
+
+    const POLMultiplier = totalPol
+      .plus(liquidityPositionsTotalDisplay)
+      .div(totalTvl)
+      .toFixed(4)
+
+    return {
+      POLMultiplier,
+      totalVolume: totalVolume.toString(),
+      totalTvl: totalTvl.toString(),
+    }
+  }, [omnipoolAssets, liquidityPositionsTotalDisplay])
+
+  return {
+    bondAssets,
+    assets: combinedAssets,
+    liquidityPositions,
+    assetsTotalDisplay,
+    liquidityPositionsTotalDisplay,
+    bondsTotalDisplay,
+    total,
+    isLoading,
+    totalTvl,
+    totalVolume,
+    POLMultiplier,
+  }
+}
+
+export const useOmnipoolAssetDetails = () => {
+  const { native, getAssetWithFallback } = useAssets()
+  const omnipoolAssets = useOmnipoolDataObserver()
+
+  const omnipoolAssetsIds = omnipoolAssets.data?.map((a) => a.id) ?? []
   const { data: allFarms, isLoading: isAllFarmsLoading } =
     useOmnipoolFarms(omnipoolAssetsIds)
 
   const { data: volumes = [], isLoading: isVolumeLoading } =
     useOmnipoolVolumes(omnipoolAssetsIds)
 
-  const tvls = useTVL("all")
-  const fees = useFee("all")
+  const { data: tvls, isLoading: isTvlsLoading } = useTVL("all")
+  const { data: fees, isLoading: isFeesLoading } = useFee("all")
 
-  const spotPrices = useSpotPrices(
-    omnipoolAssetsIds,
-    displayAsset.stableCoinId,
-    withoutRefresh,
-  )
+  const { data: spotPrices, isLoading: isSpotPricesLoading } =
+    useNewDisplayPrices(omnipoolAssetsIds, withoutRefresh)
 
-  const queries = [omnipoolAssets, accountAssets, tvls, ...spotPrices]
-  const isLoading = queries.some((q) => q.isLoading)
-
-  const positions = accountAssets.data?.liquidityPositions
+  const isLoading =
+    omnipoolAssets.isLoading || isSpotPricesLoading || isTvlsLoading
 
   const data = useMemo(() => {
-    if (
-      !omnipoolAssets.data ||
-      !tvls.data ||
-      spotPrices.some((q) => !q.data) ||
-      !positions
-    )
-      return []
-
-    // get a price of each position of HYDRA_TREASURE_ACCOUNT and filter it
-    const treasurePositionsValue = positions.reduce(
-      (acc, position) => {
-        const data = getData(position)
-
-        const assetId = position.assetId.toString()
-
-        return {
-          ...acc,
-          [assetId]: data?.valueDisplay.plus(acc[assetId] ?? BN_0) ?? BN_NAN,
-        }
-      },
-      {} as { [key: string]: BN },
-    )
+    if (!omnipoolAssets.data || !tvls || !spotPrices) return []
 
     const rows = omnipoolAssets.data.map((omnipoolAsset) => {
       const omnipoolAssetId = omnipoolAsset.id
@@ -76,28 +317,25 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
 
       const meta = getAssetWithFallback(omnipoolAsset.id)
 
-      const spotPrice = spotPrices.find(
-        (sp) => sp?.data?.tokenIn === omnipoolAssetId,
-      )?.data?.spotPrice
+      const spotPrice =
+        spotPrices.find((sp) => sp?.tokenIn === omnipoolAssetId)?.spotPrice ??
+        ""
 
       const omnipoolAssetCap = scaleHuman(omnipoolAsset.cap, "q")
 
-      if (!meta || !spotPrice) return null
-
-      const free = getFloatingPointAmount(omnipoolAsset.balance, meta.decimals)
+      const free = omnipoolAsset.balance
 
       const valueOfShares = protocolShares
         .div(shares)
         .multipliedBy(free)
-        .times(spotPrice)
+        .shiftedBy(-meta.decimals)
 
-      const valueOfLiquidityPositions =
-        treasurePositionsValue[omnipoolAssetId] ?? BN_0
+      const pol = valueOfShares
 
-      const pol = valueOfLiquidityPositions.plus(valueOfShares)
+      const polDisplay = pol.times(spotPrice)
 
       const tvl = BN(
-        tvls?.data?.find((tvl) => tvl?.asset_id === Number(omnipoolAssetId))
+        tvls?.find((tvl) => tvl?.asset_id === Number(omnipoolAssetId))
           ?.tvl_usd ?? BN_NAN,
       )
 
@@ -109,7 +347,7 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
         volumeRaw && spotPrice
           ? BN(volumeRaw).shiftedBy(-meta.decimals).multipliedBy(spotPrice)
           : BN_NAN
-      const isLoadingFee = fees?.isInitialLoading || isAllFarmsLoading
+      const isLoadingFee = isFeesLoading || isAllFarmsLoading
 
       const { totalApr, farms = [] } = allFarms?.get(omnipoolAsset.id) ?? {}
 
@@ -117,9 +355,8 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
         native.id === omnipoolAssetId
           ? BN_0
           : BN(
-              fees?.data?.find(
-                (fee) => fee?.asset_id === Number(omnipoolAssetId),
-              )?.projected_apr_perc ?? BN_NAN,
+              fees?.find((fee) => fee?.asset_id === Number(omnipoolAssetId))
+                ?.projected_apr_perc ?? BN_NAN,
             )
 
       const totalFee = !isLoadingFee ? fee.plus(totalApr ?? 0) : BN_NAN
@@ -131,9 +368,9 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
         tvl,
         volume,
         pol,
+        polDisplay,
         iconIds: meta.iconId,
         cap: omnipoolAssetCap,
-        volumePol: BN(0),
         price: spotPrice,
         fee,
         totalFee,
@@ -144,39 +381,35 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
     })
     return rows
   }, [
-    fees?.data,
-    fees?.isInitialLoading,
+    fees,
+    isFeesLoading,
     getAssetWithFallback,
-    getData,
     native.id,
     omnipoolAssets.data,
-    positions,
     spotPrices,
-    tvls.data,
+    tvls,
     volumes,
     isVolumeLoading,
     allFarms,
     isAllFarmsLoading,
-  ])
-    .filter(isNotNil)
-    .sort((assetA, assetB) => {
-      if (assetA.id === native.id) {
-        return -1
-      }
+  ]).sort((assetA, assetB) => {
+    if (assetA.id === native.id) {
+      return -1
+    }
 
-      if (assetB.id === native.id) {
-        return 1
-      }
+    if (assetB.id === native.id) {
+      return 1
+    }
 
-      if (assetA[sortBy].isNaN()) return 1
-      if (assetB[sortBy].isNaN()) return -1
+    if (assetA["tvl"].isNaN()) return 1
+    if (assetB["tvl"].isNaN()) return -1
 
-      return assetA[sortBy].gt(assetB[sortBy]) ? -1 : 1
-    })
+    return assetA["tvl"].gt(assetB["tvl"]) ? -1 : 1
+  })
 
   return { data, isLoading }
 }
 
-export type TUseOmnipoolAssetDetails = typeof useOmnipoolAssetDetails
-export type TUseOmnipoolAssetDetailsData =
-  ReturnType<TUseOmnipoolAssetDetails>["data"]
+export type TUseOmnipoolAssetDetailsData = ReturnType<
+  typeof useOmnipoolAssetDetails
+>["data"]
