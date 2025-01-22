@@ -20,7 +20,7 @@ export const DAY_IN_MILLISECONDS = new BN(86400000)
 
 // block time in seconds
 export const BLOCK_TIME = new BN(6)
-export const PARACHAIN_BLOCK_TIME = new BN(12)
+export const PARACHAIN_BLOCK_TIME = new BN(6)
 
 // ms until toast closes
 export const TOAST_CLOSE_TIME = 5000
