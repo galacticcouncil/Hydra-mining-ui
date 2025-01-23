@@ -1,27 +1,27 @@
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { Text } from "components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
-import { useDisplayAssetStore } from "utils/displayAsset"
+import { AssetLogo } from "components/AssetIcon/AssetIcon";
+import { Text } from "components/Typography/Text/Text";
+import { useTranslation } from "react-i18next";
+import { useDisplayAssetStore } from "utils/displayAsset";
 import {
   SCircle,
   SItem,
   SItemUSD,
   SItems,
-} from "./HeaderSettingsDisplayAsset.styled"
-import { HeaderSettingsDisplayAssetSkeleton } from "./skeleton/HeaderSettingsDisplayAssetSkeleton"
-import { Icon } from "components/Icon/Icon"
-import { useAssets } from "providers/assets"
+} from "./HeaderSettingsDisplayAsset.styled";
+import { HeaderSettingsDisplayAssetSkeleton } from "./skeleton/HeaderSettingsDisplayAssetSkeleton";
+import { Icon } from "components/Icon/Icon";
+import { useAssets } from "providers/assets";
 
-type Props = { onSelect: () => void }
+type Props = { onSelect: () => void };
 
 export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
-  const { t } = useTranslation()
-  const { tradable } = useAssets()
+  const { t } = useTranslation();
+  const { tradable } = useAssets();
   const sortedTokens = tradable
     .filter((tradeAsset) => tradeAsset.isToken)
-    .sort((a, b) => a.symbol.localeCompare(b.symbol))
+    .sort((a, b) => a.symbol.localeCompare(b.symbol));
 
-  const displayAsset = useDisplayAssetStore()
+  const displayAsset = useDisplayAssetStore();
 
   const onSelectUSD = () => {
     displayAsset.update({
@@ -30,9 +30,9 @@ export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
       symbol: "$",
       isRealUSD: true,
       isStableCoin: false,
-    })
-    onSelect()
-  }
+    });
+    onSelect();
+  };
   const onSelectStableCoin = () => {
     displayAsset.update({
       id: displayAsset.stableCoinId,
@@ -40,9 +40,9 @@ export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
       symbol: "$",
       isRealUSD: false,
       isStableCoin: true,
-    })
-    onSelect()
-  }
+    });
+    onSelect();
+  };
   const onSelectAsset = (asset: { id: string; symbol: string }) => {
     displayAsset.update({
       id: asset.id,
@@ -50,11 +50,11 @@ export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
       symbol: asset.symbol,
       isRealUSD: false,
       isStableCoin: false,
-    })
-    onSelect()
-  }
+    });
+    onSelect();
+  };
 
-  if (!sortedTokens) return <HeaderSettingsDisplayAssetSkeleton />
+  if (!sortedTokens) return <HeaderSettingsDisplayAssetSkeleton />;
 
   return (
     <SItems>
@@ -102,7 +102,7 @@ export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
         const isActive =
           asset.id === displayAsset.id &&
           !displayAsset.isStableCoin &&
-          !displayAsset.isRealUSD
+          !displayAsset.isRealUSD;
 
         return (
           <SItem
@@ -125,8 +125,8 @@ export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
               <SCircle isActive={isActive} />
             </div>
           </SItem>
-        )
+        );
       })}
     </SItems>
-  )
-}
+  );
+};

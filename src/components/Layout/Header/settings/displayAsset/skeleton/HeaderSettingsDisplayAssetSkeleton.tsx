@@ -1,10 +1,10 @@
-import Skeleton from "react-loading-skeleton"
+import Skeleton from "react-loading-skeleton";
 import {
   SCircle,
   SItem,
   SItemUSD,
   SItems,
-} from "components/Layout/Header/settings/displayAsset/HeaderSettingsDisplayAsset.styled"
+} from "components/Layout/Header/settings/displayAsset/HeaderSettingsDisplayAsset.styled";
 
 export const HeaderSettingsDisplayAssetSkeleton = () => {
   return (
@@ -34,5 +34,5 @@ export const HeaderSettingsDisplayAssetSkeleton = () => {
         </SItem>
       ))}
     </SItems>
-  )
-}
+  );
+};
