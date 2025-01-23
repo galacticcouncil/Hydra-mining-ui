@@ -85,6 +85,15 @@ export const PROVIDERS: ProviderProps[] = [
     dataEnv: "testnet",
   },
   {
+    name: "Max Lark Testnet",
+    url: "wss://max.lark.hydration.cloud",
+    indexerUrl: "https://archive.nice.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-testnet-pools:dev/api/graphql",
+    env: ["development"],
+    dataEnv: "testnet",
+  },
+  {
     name: "Paseo",
     url: `wss://${PASEO_WS_URL}`,
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
