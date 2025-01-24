@@ -8,7 +8,7 @@ import {
   STextButton,
 } from "./TextButton.styled"
 
-export type TextButtonProps = React.ComponentPropsWithoutRef<"p"> &
+export type TextButtonProps = React.ComponentPropsWithoutRef<"button"> &
   CustomTextButtonProps
 
 const TextButtonIcon = ({
@@ -24,9 +24,9 @@ const TextButtonIcon = ({
   return null
 }
 
-export const TextButton = forwardRef<HTMLParagraphElement, TextButtonProps>(
+export const TextButton = forwardRef<HTMLButtonElement, TextButtonProps>(
   ({ direction = "none", ...props }, ref) => (
-    <STextButton ref={ref} direction={direction} {...props}>
+    <STextButton ref={ref} type="button" direction={direction} {...props}>
       {props.children}
       <TextButtonIcon direction={direction} />
     </STextButton>

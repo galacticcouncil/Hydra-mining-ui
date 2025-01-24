@@ -89,7 +89,6 @@ const Template = (args: Story["args"]) => (
             <TableCell>
               <Flex align="center" gap={8}>
                 <AssetLogo
-                  assetId={id}
                   src={`https://s2.coinmarketcap.com/static/img/coins/64x64/${id}.png`}
                 />
                 <Text fw={600}>{symbol}</Text>

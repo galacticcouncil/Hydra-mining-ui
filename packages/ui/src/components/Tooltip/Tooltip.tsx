@@ -15,6 +15,7 @@ type InfoTooltipProps = {
   text: ReactNode | string
   children?: ReactNode
   side?: TooltipContentProps["side"]
+  align?: TooltipContentProps["align"]
   asChild?: boolean
   preventDefault?: boolean
 }
@@ -23,6 +24,7 @@ export const Tooltip = ({
   text,
   children,
   side = "bottom",
+  align = "center",
   asChild = false,
   preventDefault,
 }: InfoTooltipProps) => {
@@ -53,7 +55,7 @@ export const Tooltip = ({
       <Portal>
         <SContent
           side={side}
-          align="start"
+          align={align}
           sideOffset={3}
           alignOffset={-10}
           collisionPadding={12}

@@ -25,42 +25,12 @@ export const Default: Story = {
   },
 }
 
-export const WithBorder: Story = {
-  render: Template,
-  args: {
-    p: 10,
-    border: 2,
-    borderColor: "black",
-  },
-}
-
 export const WithBorderRadius: Story = {
   render: Template,
   args: {
     p: 10,
-    border: 2,
-    borderColor: "black",
+    bg: "pink",
     borderRadius: "lg",
-  },
-}
-
-export const WithBorderTopRadius: Story = {
-  render: Template,
-  args: {
-    p: 10,
-    border: 2,
-    borderColor: "black",
-    borderTopRadius: "full",
-  },
-}
-
-export const WithBorderBottomRadius: Story = {
-  render: Template,
-  args: {
-    p: 10,
-    border: 2,
-    borderColor: "black",
-    borderBottomRadius: "full",
   },
 }
 
@@ -106,25 +76,12 @@ export const WithSize: Story = {
   },
 }
 
-export const WithOpacity: Story = {
+export const Responsive: Story = {
   render: Template,
   args: {
-    p: 10,
-    bg: "pink",
-    opacity: 0.5,
-  },
-}
-
-export const KitchenSink: Story = {
-  render: Template,
-  args: {
-    p: [20, 40],
-    m: [20, 40],
-    size: [100, 200],
-    bg: ["skyblue", "pink"],
-    border: [4, 8],
-    borderColor: ["black", "hotpink"],
-    borderTopRadius: ["full", 0],
-    borderBottomRadius: [0, "full"],
+    p: [20, null, 40],
+    m: [20, null, 40],
+    size: [100, null, 200],
+    bg: ["skyblue", null, "pink"],
   },
 }

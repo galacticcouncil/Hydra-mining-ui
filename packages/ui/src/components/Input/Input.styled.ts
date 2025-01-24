@@ -106,66 +106,77 @@ export const SInput = styled.input<CustomInputProps>(
 
 const groupSizes = createVariants(() => ({
   small: css`
-    &:has([data-slot="icon"]:first-child) input {
+    &:has([data-slot="icon"] + input) input {
       padding-left: 28px;
     }
 
-    &:has([data-slot="icon"]:last-child) input {
+    &:has(input + [data-slot="icon"]) input {
       padding-right: 28px;
     }
 
     & > [data-slot="icon"] {
       height: 14px;
       margin-top: -7px;
-      &:first-child {
-        left: 10px;
-      }
-      &:last-child {
-        right: 10px;
-      }
+      left: 6px;
+    }
+
+    input + [data-slot="icon"] {
+      left: auto;
+      right: 6px;
     }
   `,
   medium: css`
-    &:has([data-slot="icon"]:first-child) input {
+    &:has([data-slot="icon"] + input) input {
       padding-left: 36px;
     }
 
-    &:has([data-slot="icon"]:last-child) input {
+    &:has(input + [data-slot="icon"]) input {
       padding-right: 36px;
     }
 
     & > [data-slot="icon"] {
       height: 18px;
       margin-top: -9px;
-      &:first-child {
-        left: 12px;
-      }
-      &:last-child {
-        right: 12px;
-      }
+      left: 10px;
+    }
+
+    input + [data-slot="icon"] {
+      left: auto;
+      right: 10px;
     }
   `,
   large: css`
-    &:has([data-slot="icon"]:first-child) input {
+    &:has([data-slot="icon"] + input) input {
       padding-left: 48px;
     }
 
-    &:has([data-slot="icon"]:last-child) input {
+    &:has(input + [data-slot="icon"]) input {
       padding-right: 48px;
     }
 
     & > [data-slot="icon"] {
       height: 20px;
       margin-top: -10px;
-      &:first-child {
-        left: 16px;
-      }
-      &:last-child {
-        right: 16px;
-      }
+      left: 16px;
+    }
+
+    input + [data-slot="icon"] {
+      left: auto;
+      right: 16px;
     }
   `,
 }))
+
+/* & > [data-slot="icon"] {
+  height: 20px;
+  margin-top: -10px;
+  &:first-of-type {
+    left: 16px;
+  }
+  &:last-of-type {
+    right: 16px;
+  }
+} */
 
 export const SInputGroup = styled.div<
   Pick<CustomInputProps, "customSize" | "disabled">

@@ -6,6 +6,7 @@ import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { createRouter, RouterProvider } from "@tanstack/react-router"
 
+import { InvalidateOnBlock } from "@/components/InvalidateOnBlock/InvalidateOnBlock"
 import { Page404 } from "@/components/Page404"
 import { AssetsProvider } from "@/providers/assetsProvider"
 import { RpcProvider } from "@/providers/rpcProvider"
@@ -37,9 +38,11 @@ export const App = () => {
       <ThemeProvider>
         <AssetsProvider>
           <RpcProvider>
-            <TooltipProvider delayDuration={0}>
-              <RouterProvider router={router} />
-            </TooltipProvider>
+            <InvalidateOnBlock>
+              <TooltipProvider delayDuration={0}>
+                <RouterProvider router={router} />
+              </TooltipProvider>
+            </InvalidateOnBlock>
           </RpcProvider>
         </AssetsProvider>
       </ThemeProvider>

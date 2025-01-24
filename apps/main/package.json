@@ -51,6 +51,7 @@
     "@galacticcouncil/xcm-cfg": "^6.0.1",
     "@galacticcouncil/xcm-core": "^5.5.0",
     "@galacticcouncil/xcm-sdk": "^7.0.1",
+    "@hookform/resolvers": "^3.10.0",
     "@polkadot/api": "14.0.1",
     "@polkadot/apps-config": "^0.132.1",
     "@polkadot/extension-inject": "^0.48.2",
@@ -64,9 +65,11 @@
     "i18next": "^23.16.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-hook-form": "^7.54.2",
     "react-i18next": "^15.1.0",
     "viem": "^2.21.55",
-    "vite-plugin-wasm": "^3.3.0"
+    "vite-plugin-wasm": "^3.3.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@galacticcouncil/api-augment": "^0.3.0",

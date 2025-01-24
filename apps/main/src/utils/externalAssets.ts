@@ -180,9 +180,10 @@ export const getExternalId = (asset: Asset) => {
   const parachainId = getParachainId(asset)
 
   switch (parachainId) {
-    case pendulum.parachainId:
+    case pendulum.parachainId: {
       const generalKey = getGeneralKey(asset)
       return getPendulumAssetIdFromGeneralKey(generalKey)
+    }
     case assethub.parachainId:
       return getGeneralIndex(asset)
     default:

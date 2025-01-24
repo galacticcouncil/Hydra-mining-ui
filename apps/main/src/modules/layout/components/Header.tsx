@@ -1,5 +1,5 @@
 import { HydrationLogoFull } from "@galacticcouncil/ui/assets/icons"
-import { Button, Flex, Toggle } from "@galacticcouncil/ui/components"
+import { Button, Flex, Separator, Toggle } from "@galacticcouncil/ui/components"
 import { useTheme } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
@@ -14,14 +14,19 @@ export const Header = () => {
       py={10}
       px={[20, null, 30]}
       gap={[20, null, 40]}
-      borderBottom={1}
-      borderColor={getToken("details.separators")}
+      direction={["column", null, "row"]}
       bg={getToken("surfaces.themeBasePalette.background")}
-      sx={{ position: "sticky", top: 0, zIndex: 100 }}
+      sx={{
+        position: "sticky",
+        top: 0,
+        zIndex: 100,
+        borderBottom: "1px solid",
+        borderColor: getToken("details.separators"),
+      }}
       align="center"
     >
       <HydrationLogoFull />
-      <HeaderMenu />
+      <HeaderMenu display={["none", null, "flex"]} />
       <Flex ml="auto" align="center" gap={12}>
         <Flex gap={8}>
           Dark Mode
@@ -32,6 +37,7 @@ export const Header = () => {
         </Flex>
         <Button variant="secondary">{t("common:connectWallet")}</Button>
       </Flex>
+      <Separator />
     </Flex>
   )
 }

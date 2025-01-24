@@ -1,15 +1,48 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
-import { TEnv } from "@/api/provider"
+import { TDataEnv } from "@/api/provider"
 import { PROVIDERS } from "@/config/rpc"
+
+type RpcListStore = {
+  rpcList: Array<{
+    name?: string
+    url: string
+  }>
+  addRpc: (account: string) => void
+  removeRpc: (url: string) => void
+  renameRpc: (url: string, newName: string) => void
+}
+
+export const useRpcListStore = create<RpcListStore>()(
+  persist(
+    (set) => ({
+      rpcList: [],
+      addRpc: (url) =>
+        set((store) => ({ rpcList: [...store.rpcList, { url }] })),
+      removeRpc: (urlToRemove) =>
+        set((store) => ({
+          rpcList: store.rpcList.filter((rpc) => rpc.url !== urlToRemove),
+        })),
+      renameRpc: (urlToRename, name) =>
+        set((store) => ({
+          rpcList: store.rpcList.map((rpc) =>
+            rpc.url === urlToRename ? { ...rpc, name } : rpc,
+          ),
+        })),
+    }),
+    {
+      name: "rpcList",
+    },
+  ),
+)
 
 export const useProviderRpcUrlStore = create(
   persist<{
     rpcUrl: string
     autoMode: boolean
     setRpcUrl: (rpcUrl: string | undefined) => void
-    getDataEnv: () => TEnv
+    getDataEnv: () => TDataEnv
     setAutoMode: (state: boolean) => void
     _hasHydrated: boolean
     _setHasHydrated: (value: boolean) => void

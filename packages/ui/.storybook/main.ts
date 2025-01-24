@@ -28,10 +28,13 @@ const config: StorybookConfig = {
     options: {},
   },
   async viteFinal(config) {
+    config.build = {
+      ...config.build,
+      target: "esnext",
+    }
     config.esbuild = {
       ...config.esbuild,
       jsxFactory: "jsx",
-      jsxInject: `import {jsx} from "@theme-ui/core"`,
     }
     config.plugins = [
       react({

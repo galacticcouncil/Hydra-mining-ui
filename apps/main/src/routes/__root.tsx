@@ -7,6 +7,7 @@ import {
 import { TanStackRouterDevtools } from "@tanstack/router-devtools"
 
 import { assetsQuery } from "@/api/assets"
+import { ProviderRpcSelect } from "@/components/ProviderRpcSelect/ProviderRpcSelect"
 import { MainLayout } from "@/modules/layout/MainLayout"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -32,8 +33,9 @@ function RootComponent() {
       <MainLayout />
       <ScrollRestoration />
       <ReactQueryDevtools buttonPosition="bottom-left" />
-      <TanStackRouterDevtools position="bottom-right" />
+      <TanStackRouterDevtools position="bottom-left" />
       {isApiLoaded && <Subscriptions />}
+      <ProviderRpcSelect />
     </>
   )
 }

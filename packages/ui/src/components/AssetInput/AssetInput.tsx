@@ -165,7 +165,7 @@ const AssetButton = ({
     return (
       <SAssetButton isError={!!error} onClick={onAsssetBtnClick}>
         <AssetLogo
-          assetId="0"
+          alt="HDX"
           src="https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/0/icon.svg"
         />
         <Flex align="center" gap={4}>

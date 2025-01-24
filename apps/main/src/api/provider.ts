@@ -10,16 +10,15 @@ import { ApiPromise, WsProvider } from "@polkadot/api"
 import { queryOptions } from "@tanstack/react-query"
 
 import { PROVIDERS } from "@/config/rpc"
-import { useProviderRpcUrlStore } from "@/states/provider"
 
-export type TEnv = "testnet" | "paseo" | "mainnet"
+export type TDataEnv = "testnet" | "paseo" | "mainnet"
 export type ProviderProps = {
   name: string
   url: string
   indexerUrl: string
   squidUrl: string
-  env: string | string[]
-  dataEnv: TEnv
+  env: string[]
+  dataEnv: TDataEnv
 }
 
 export type TFeatureFlags = {
@@ -29,25 +28,29 @@ export type TFeatureFlags = {
 export type TProviderData = Awaited<ReturnType<typeof getProviderData>>
 
 export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
-  typeof provider.env === "string"
-    ? provider.env === import.meta.env.VITE_ENV
-    : provider.env.includes(import.meta.env.VITE_ENV),
+  provider.env.includes(import.meta.env.VITE_ENV),
 )
 
 export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
 
-export const providerQuery = () => {
-  const { setRpcUrl, rpcUrl, autoMode } = useProviderRpcUrlStore.getState()
+export const getProviderProps = (url: string) =>
+  PROVIDERS.find((p) => p.url === url)
 
-  const rpcUrlList = autoMode ? PROVIDER_URLS : [rpcUrl]
+type ProviderQueryOptions = {
+  onSuccess?: (endpoint: string) => void
+}
 
+export const providerQuery = (
+  rpcUrlList: string[],
+  options: ProviderQueryOptions = {},
+) => {
   return queryOptions({
     queryKey: ["provider", rpcUrlList.join()],
     queryFn: async () => {
       const data = await getProviderData(rpcUrlList)
       const provider = getProviderInstance(data.api)
 
-      setRpcUrl(provider.endpoint)
+      options.onSuccess?.(provider.endpoint)
 
       return data
     },
@@ -61,6 +64,10 @@ const getProviderData = async (rpcUrlList: string[]) => {
   const maxRetries = rpcUrlList.length * 5
   const apiPool = SubstrateApis.getInstance()
   const api = await apiPool.api(rpcUrlList, maxRetries)
+
+  const provider = getProviderInstance(api)
+
+  const endpoint = provider.endpoint
 
   api.registry.register({
     XykLMDeposit: {
@@ -104,6 +111,8 @@ const getProviderData = async (rpcUrlList: string[]) => {
     balanceClient,
     assetClient,
     rpcUrlList,
+    endpoint,
+    dataEnv: PROVIDERS.find((p) => p.url === endpoint)?.dataEnv ?? "mainnet",
     featureFlags: {
       dispatchPermit: !!isDispatchPermitEnabled,
     },
@@ -115,4 +124,34 @@ export function getProviderInstance(api: ApiPromise) {
   //@ts-ignore
   const options = api?._options
   return options?.provider as WsProvider
+}
+
+export async function reconnectProvider(provider: WsProvider) {
+  if (provider?.isConnected) return
+  await provider.connect()
+  await new Promise((resolve) => {
+    if (provider.isConnected) {
+      resolve(provider)
+    } else {
+      provider.on("connected", () => {
+        resolve(provider)
+      })
+    }
+  })
+}
+
+export async function changeProvider(prevUrl: string, nextUrl: string) {
+  if (prevUrl === nextUrl) return
+  const apiPool = SubstrateApis.getInstance()
+  const prevApi = await apiPool.api(prevUrl)
+
+  if (prevApi && prevApi.isConnected) {
+    await prevApi.disconnect()
+  }
+
+  const nextApi = await apiPool.api(nextUrl)
+
+  if (nextApi && !nextApi.isConnected) {
+    await reconnectProvider(getProviderInstance(nextApi))
+  }
 }

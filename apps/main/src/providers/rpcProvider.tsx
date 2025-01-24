@@ -4,12 +4,21 @@ import {
   type TradeRouter,
 } from "@galacticcouncil/sdk"
 import { ApiPromise } from "@polkadot/api"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { createContext, ReactNode, useContext, useMemo } from "react"
+import { usePrevious } from "react-use"
 
-import { providerQuery, TFeatureFlags } from "@/api/provider"
+import {
+  changeProvider,
+  getProviderProps,
+  PROVIDER_URLS,
+  providerQuery,
+  TDataEnv,
+  TFeatureFlags,
+} from "@/api/provider"
 import { useAssetRegistry } from "@/states/assetRegistry"
 import { useDisplayAssetStore } from "@/states/displayAsset"
+import { useProviderRpcUrlStore } from "@/states/provider"
 
 export type TProviderContext = {
   api: ApiPromise
@@ -20,9 +29,11 @@ export type TProviderContext = {
   featureFlags: TFeatureFlags
   rpcUrlList: string[]
   assetClient: AssetClient
+  endpoint: string
+  dataEnv: TDataEnv
 }
 
-const defaultData = {
+const defaultData: TProviderContext = {
   isLoaded: false,
   isApiLoaded: false,
   api: {} as TProviderContext["api"],
@@ -31,6 +42,8 @@ const defaultData = {
   poolService: {} as TProviderContext["poolService"],
   assetClient: {} as TProviderContext["assetClient"],
   rpcUrlList: [],
+  endpoint: "",
+  dataEnv: "mainnet",
 }
 
 const ProviderContext = createContext<TProviderContext>(defaultData)
@@ -40,19 +53,34 @@ export const useRpcProvider = () => useContext(ProviderContext)
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const { assets } = useAssetRegistry()
   const isAssets = !!assets.length
-  const { data } = useQuery(providerQuery())
+  const { setRpcUrl, rpcUrl, autoMode } = useProviderRpcUrlStore()
+  const rpcUrlList = autoMode ? PROVIDER_URLS : [rpcUrl]
+
+  const queryClient = useQueryClient()
+  const prevRpcUrl = usePrevious(rpcUrl)
+
+  const { data } = useQuery(
+    providerQuery(rpcUrlList, {
+      onSuccess: async (url) => {
+        setRpcUrl(url)
+
+        if (prevRpcUrl && prevRpcUrl !== url) {
+          await changeProvider(prevRpcUrl, url)
+
+          const prevDataEnv = getProviderProps(prevRpcUrl)?.dataEnv
+          const nextDataEnv = getProviderProps(url)?.dataEnv
+
+          if (!nextDataEnv || nextDataEnv !== prevDataEnv) {
+            queryClient.invalidateQueries({
+              queryKey: ["assets"],
+            })
+          }
+        }
+      },
+    }),
+  )
 
   const displayAsset = useDisplayAssetStore()
-
-  //   useWindowFocus({
-  //     onFocus: () => {
-  //       const provider = providerData.data?.api
-
-  //       if (provider && !provider.isConnected) {
-  //         provider.connect()
-  //       }
-  //     },
-  //   })
 
   const value = useMemo(() => {
     if (data) {

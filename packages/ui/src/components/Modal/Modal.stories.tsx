@@ -86,18 +86,13 @@ const WithCustomHeaderTemplate = (args: Story["args"]) => {
             {Array.from({ length: 100 }).map((_, i) => (
               <Flex
                 key={i}
-                borderBottom={1}
                 py={10}
                 px="var(--modal-content-padding)"
-                borderColor={getToken("details.borders")}
                 justify="space-between"
                 align="center"
               >
                 <Flex align="center" gap={8}>
-                  <AssetLogo
-                    assetId="0"
-                    src="https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/0/icon.svg"
-                  />
+                  <AssetLogo src="https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/0/icon.svg" />
                   <Text fw={600}>HDX</Text>
                 </Flex>
                 <Text fs="p6" color={getToken("text.medium")}>

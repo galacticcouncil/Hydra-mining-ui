@@ -7,9 +7,12 @@ import tsconfigPaths from "vite-tsconfig-paths"
 
 export default defineConfig({
   build: {
+    target: "esnext",
     outDir: "build",
-    rollupOptions: {
-      external: ["viem"],
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      target: "esnext",
     },
   },
   plugins: [

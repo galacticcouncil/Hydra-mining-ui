@@ -59,6 +59,7 @@ export const SModalContent = styled(Content)`
 
   position: fixed;
   inset: 0;
+  outline: none;
 
   width: 100%;
   height: 100dvh;

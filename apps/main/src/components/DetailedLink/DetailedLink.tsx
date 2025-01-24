@@ -40,7 +40,12 @@ export const DetailedLink: React.FC<DetailedLinkProps> = ({
           </Text>
         )}
       </Box>
-      <Icon size={20} component={PixelArrowRight} opacity={0.2} ml="auto" />
+      <Icon
+        size={20}
+        component={PixelArrowRight}
+        sx={{ opacity: 0.2 }}
+        ml="auto"
+      />
     </Link>
   </SDetailedLink>
 )

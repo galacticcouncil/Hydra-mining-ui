@@ -33,7 +33,7 @@ export const AssetLogo = ({
   if (!src) return <SPlaceholder component={PlaceholderAssetLogo} size={size} />
 
   return (
-    <Box sx={{ position: "relative", width: "fit-content" }}>
+    <Box sx={{ position: "relative", width: "fit-content", flexShrink: 0 }}>
       <SAssetLogo
         loading="lazy"
         src={src}

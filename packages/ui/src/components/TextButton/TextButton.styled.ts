@@ -6,7 +6,7 @@ export type CustomTextButtonProps = {
   direction?: "none" | "internal" | "external"
 }
 
-export const STextButton = styled.p<CustomTextButtonProps>(
+export const STextButton = styled.button<CustomTextButtonProps>(
   ({ theme, variant = "plain" }) => css`
     cursor: pointer;
     font-weight: 500;

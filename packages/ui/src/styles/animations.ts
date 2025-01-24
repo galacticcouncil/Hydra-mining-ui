@@ -1,6 +1,14 @@
 import { keyframes } from "@emotion/react"
 
 export const animations = {
+  rotate: keyframes`
+    0% {
+      transform: rotate(0);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  `,
   fadeInBack: keyframes`
     0% {
       transform: translateZ(80px);

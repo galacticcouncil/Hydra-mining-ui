@@ -41,13 +41,13 @@ export const Grid = forwardRef<HTMLElement, GridProps>(
     return (
       <Box
         ref={ref}
-        {...props}
+        display="grid"
         sx={{
-          display: "grid",
           gridGap: gap,
           gridTemplateColumns,
           ...sx,
         }}
+        {...props}
       />
     )
   },

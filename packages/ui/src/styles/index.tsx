@@ -92,7 +92,7 @@ const scrollbar = (theme: Theme) => css`
   }
 
   ::-webkit-scrollbar-track {
-    background: ${theme.surfaces.containers.high};
+    background: transparent;
     border-radius: 3px;
   }
 
@@ -105,6 +105,7 @@ const globalStyles = (theme: Theme) => css`
   ${normalize}
   ${scrollbar(theme)}
 
+
   body {
     font-family: ${theme.fontFamilies1.secondary};
     font-size: 14px;
@@ -112,6 +113,11 @@ const globalStyles = (theme: Theme) => css`
 
     background-color: ${theme.surfaces.themeBasePalette.background};
     color: ${theme.text.high};
+  }
+
+  ::selection {
+    background-color: ${theme.text.tint.secondary};
+    color: ${theme.buttons.primary.medium.onButton};
   }
 `
 

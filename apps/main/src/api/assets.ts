@@ -108,10 +108,10 @@ const BASE_URL =
 const pathes = ["/assets-v2.json", "/chains-v2.json"] //, , "/metadata.json"
 
 export const assetsQuery = (data: TProviderContext) => {
-  const { rpcUrlList = [], assetClient, tradeRouter } = data
+  const { assetClient, tradeRouter } = data
 
   return queryOptions({
-    queryKey: ["assets", rpcUrlList.join(",")],
+    queryKey: ["assets"],
     queryFn:
       assetClient && tradeRouter
         ? async () => {
@@ -273,10 +273,9 @@ export const assetsQuery = (data: TProviderContext) => {
             return []
           }
         : () => undefined,
-    enabled: !!rpcUrlList.length && !!assetClient && !!tradeRouter,
+    enabled: !!assetClient && !!tradeRouter,
     retry: false,
     refetchOnWindowFocus: false,
     staleTime: Infinity,
-    gcTime: 0,
   })
 }

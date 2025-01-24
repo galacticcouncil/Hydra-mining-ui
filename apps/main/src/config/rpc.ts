@@ -9,7 +9,7 @@ export const PROVIDERS: ProviderProps[] = [
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl:
       "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
-    env: "production",
+    env: ["production"],
     dataEnv: "mainnet",
   },
   {
@@ -18,7 +18,7 @@ export const PROVIDERS: ProviderProps[] = [
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl:
       "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
-    env: "production",
+    env: ["production"],
     dataEnv: "mainnet",
   },
   {
@@ -27,7 +27,7 @@ export const PROVIDERS: ProviderProps[] = [
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl:
       "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
-    env: "production",
+    env: ["production"],
     dataEnv: "mainnet",
   },
   {
@@ -36,7 +36,7 @@ export const PROVIDERS: ProviderProps[] = [
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl:
       "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
-    env: "production",
+    env: ["production"],
     dataEnv: "mainnet",
   },
   {

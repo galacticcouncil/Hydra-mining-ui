@@ -40,6 +40,8 @@ export const SRoot = styled(Root)<{ size: CheckboxSize }>(
     css`
       display: block;
 
+      flex-shrink: 0;
+
       border: 1px solid ${theme.controls.outline.base};
       border-radius: 4px;
 

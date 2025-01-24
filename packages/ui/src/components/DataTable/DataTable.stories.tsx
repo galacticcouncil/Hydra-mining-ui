@@ -112,7 +112,6 @@ const TABLE_COLUMNS = [
       return (
         <Flex align="center" gap={8}>
           <AssetLogo
-            assetId={row.original.id}
             src={`https://s2.coinmarketcap.com/static/img/coins/64x64/${row.original.id}.png`}
           />
           <Text fw={600}>{getValue()}</Text>
