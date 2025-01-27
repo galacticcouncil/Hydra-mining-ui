@@ -318,6 +318,7 @@ export const getAccountTransfers =
                 name_in: [
                   "Tokens.transfer_keep_alive"
                   "Tokens.transfer"
+                  "Currencies.transfer"
                   "Balances.transfer_keep_alive"
                   "Balances.transfer"
                   "XTokens.transfer"
@@ -326,6 +327,7 @@ export const getAccountTransfers =
                   name_in: [
                     "Tokens.transfer_keep_alive"
                     "Tokens.transfer"
+                    "Currencies.transfer"
                     "Balances.transfer_keep_alive"
                     "Balances.transfer"
                     "XTokens.transfer"
