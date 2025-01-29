@@ -8,10 +8,12 @@ import { AddLiquidityForm } from "./AddLiquidityForm"
 import { isXYKPoolType } from "sections/pools/PoolsPage.utils"
 import { AddLiquidityFormXYK } from "./AddLiquidityFormXYK"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { LimitModal } from "./components/LimitModal/LimitModal"
 
 export enum Page {
   ADD_LIQUIDITY,
   ASSET_SELECTOR,
+  LIMIT_LIQUIDITY,
 }
 
 type AddLiquidityProps = {
@@ -22,7 +24,7 @@ type AddLiquidityProps = {
 export const AddLiquidity = ({ isOpen, onClose }: AddLiquidityProps) => {
   const { pool } = usePoolData()
   const { t } = useTranslation()
-  const { page, direction, back } = useModalPagination()
+  const { page, direction, back, paginateTo } = useModalPagination()
   const [assetId, setAssetId] = useState(pool.id)
 
   const farms = pool.farms
@@ -35,6 +37,11 @@ export const AddLiquidity = ({ isOpen, onClose }: AddLiquidityProps) => {
         page={page}
         direction={direction}
         onClose={onClose}
+        onBack={
+          page === Page.LIMIT_LIQUIDITY
+            ? () => paginateTo(Page.ADD_LIQUIDITY)
+            : undefined
+        }
         contents={[
           {
             title: t("liquidity.add.modal.title"),
@@ -45,6 +52,7 @@ export const AddLiquidity = ({ isOpen, onClose }: AddLiquidityProps) => {
                 assetId={assetId}
                 farms={farms}
                 onClose={onClose}
+                setLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
               />
             ),
           },
@@ -60,6 +68,14 @@ export const AddLiquidity = ({ isOpen, onClose }: AddLiquidityProps) => {
                   back()
                 }}
               />
+            ),
+          },
+          {
+            title: t("liquidity.add.modal.limit.title"),
+            noPadding: true,
+            headerVariant: "GeistMono",
+            content: (
+              <LimitModal onConfirm={() => paginateTo(Page.ADD_LIQUIDITY)} />
             ),
           },
         ]}

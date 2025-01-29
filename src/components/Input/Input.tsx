@@ -39,35 +39,33 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     ref,
   ) => {
     return (
-      <>
-        <Label
-          label={label}
-          error={p.error}
-          withLabel={withLabel}
-          tooltip={tooltip}
-          id={name}
-        >
-          <SWrapper unit={p.unit}>
-            {iconStart}
-            <SInput
-              ref={ref}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                onChange(e.target.value)
-              }
-              value={value ?? ""}
-              id={name}
-              type={type}
-              error={p.error}
-              unit={p.unit}
-              placeholder={placeholder}
-              role="presentation"
-              autoComplete="off"
-              {...p}
-            />
-            {iconEnd}
-          </SWrapper>
-        </Label>
-      </>
+      <Label
+        label={label}
+        error={p.error}
+        withLabel={withLabel}
+        tooltip={tooltip}
+        id={name}
+      >
+        <SWrapper unit={p.unit}>
+          {iconStart}
+          <SInput
+            ref={ref}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onChange(e.target.value)
+            }
+            value={value ?? ""}
+            id={name}
+            type={type}
+            error={p.error}
+            unit={p.unit}
+            placeholder={placeholder}
+            role="presentation"
+            autoComplete="off"
+            {...p}
+          />
+          {iconEnd}
+        </SWrapper>
+      </Label>
     )
   },
 )

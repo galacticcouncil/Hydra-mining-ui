@@ -12,6 +12,7 @@ import { OmniPoolToken } from "@galacticcouncil/sdk/build/types/pool/omni/OmniPo
 import { millisecondsInMinute } from "date-fns"
 import { TOmnipoolAssetsData } from "./omnipool"
 import { HUB_ID } from "utils/api"
+import { BN_NAN } from "utils/constants"
 
 export const useShareOfPools = (assets: string[]) => {
   const totalIssuances = useTotalIssuances()
@@ -123,11 +124,12 @@ export const useSDKPools = () => {
 const getDynamicAssetFees =
   (api: ApiPromise, assetId: string | u32) => async () => {
     const res = await api.query.dynamicFees.assetFee(assetId)
-    const data = res.unwrap()
+
+    const data = res.unwrapOr(null)
 
     return {
-      protocolFee: data.protocolFee.toBigNumber().div(10_000),
-      assetFee: data.assetFee.toBigNumber().div(10_000),
+      protocolFee: data?.protocolFee.toBigNumber().div(10_000) ?? BN_NAN,
+      assetFee: data?.assetFee.toBigNumber().div(10_000) ?? BN_NAN,
     }
   }
 

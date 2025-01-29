@@ -167,12 +167,10 @@ export const QUERY_KEYS = {
       ? ["timestamp", bestNumber]
       : [QUERY_KEY_PREFIX, "timestamp"],
   vestingSchedules: (address: Maybe<AccountId32 | string>) => [
-    QUERY_KEY_PREFIX,
     "vestingSchedules",
     address,
   ],
   vestingLockBalance: (address: Maybe<AccountId32 | string>) => [
-    QUERY_KEY_PREFIX,
     "vestingLock",
     address,
   ],

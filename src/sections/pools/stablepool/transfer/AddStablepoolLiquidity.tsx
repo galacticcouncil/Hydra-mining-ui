@@ -144,14 +144,32 @@ export const AddStablepoolLiquidity = ({
       components: ["span", "span.highlight"],
     })
 
-    return await createTransaction(
-      {
-        tx: api.tx.stableswap.addLiquidity(poolId, [
+    const tx = isStablepoolOnly
+      ? api.tx.stableswap.addLiquidity(poolId, [
           {
             assetId: asset.id,
             amount: scale(values.value, asset.decimals).toString(),
           },
-        ]),
+        ])
+      : api.tx.omnipoolLiquidityMining.addLiquidityStableswapOmnipoolAndJoinFarms(
+          poolId,
+          [
+            {
+              assetId: asset.id,
+              amount: scale(values.value, asset.decimals).toString(),
+            },
+          ],
+          isJoinFarms
+            ? farms.map<[string, string]>((farm) => [
+                farm.globalFarmId,
+                farm.yieldFarmId,
+              ])
+            : undefined,
+        )
+
+    return await createTransaction(
+      {
+        tx,
       },
       {
         onSuccess: (result) =>
@@ -167,7 +185,6 @@ export const AddStablepoolLiquidity = ({
           onClose()
         },
         onClose,
-        disableAutoClose: !isStablepoolOnly,
         onBack: () => {},
         toast,
       },

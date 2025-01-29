@@ -108,6 +108,7 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
     omnipoolFee,
     assetMeta: pool.meta,
     assetBalance,
+    ommipoolAsset,
   }
 }
 

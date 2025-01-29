@@ -2,7 +2,7 @@ import { Modal } from "components/Modal/Modal"
 import { Stepper } from "components/Stepper/Stepper"
 import { ComponentProps, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Transaction } from "state/store"
+import { Transaction, useStore } from "state/store"
 import { useSendTx } from "./ReviewTransaction.utils"
 import { ReviewTransactionError } from "./ReviewTransactionError"
 import { ReviewTransactionForm } from "./ReviewTransactionForm"
@@ -23,6 +23,7 @@ export const ReviewTransaction = (props: Transaction) => {
   const { t } = useTranslation()
   const [minimizeModal, setMinimizeModal] = useState(false)
   const [signError, setSignError] = useState<unknown>()
+  const { cancelTransaction } = useStore()
 
   const {
     sendTx,
@@ -67,8 +68,10 @@ export const ReviewTransaction = (props: Transaction) => {
 
     if (isSuccess) {
       props.onSuccess?.(data)
-    } else {
+    } else if (isError) {
       props.onError?.()
+    } else {
+      cancelTransaction(props.id)
     }
   }
 
