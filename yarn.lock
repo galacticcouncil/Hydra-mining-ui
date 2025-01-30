@@ -2293,6 +2293,11 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-stableswap/-/math-stableswap-1.0.0.tgz#3578ffe4789be20ff443960c625976452b68dcda"
   integrity sha512-4LmaQbcDdUzUKZSAyL/GEmKDzQurEBbR08HuU7v8dXCz4Ds6Hxo9i1zqB0mPj+Bc4OUjcP0MwPIgdojRSfLN7Q==
 
+"@galacticcouncil/math-stableswap@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-stableswap/-/math-stableswap-1.1.0.tgz#40218d4cad1960311af5f22b02adcdabbcf09157"
+  integrity sha512-HPiqZaP1EUEjMHNn4INggCzaVI/TrNHoMKALfHhRs06XR73LXIOYfn2iIVsWC5mxK1EPTFsrO/CRK4w51LOtYQ==
+
 "@galacticcouncil/math-staking@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-staking/-/math-staking-1.0.0.tgz#7bb1d28e65a9b09f6a3a84dbc1e988fb89c07746"
@@ -2303,15 +2308,15 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.0.0.tgz#eeb6f3693587c96131647a24af31536cab423d96"
   integrity sha512-n44M7jKes5Rxr4RQZ5W7kscTfoO4xwhW3VL/VyaEP1KEHMavlICpDNOlCwO/k6RTr+UXU8cHLJZdBzGFa2soJA==
 
-"@galacticcouncil/sdk@^5.3.0":
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-5.3.0.tgz#cd0b8f3d3d1918a27330645272143252d4abae5e"
-  integrity sha512-Jd1qFrL0BB1pHUtOIL8RWhrmSkd9E7x14NpwUqV+4cOe8/M8DP11u9yToW6dLCMDDpX9yA4l8XtHGFnVu0knTA==
+"@galacticcouncil/sdk@5.4.0-pr117-f139501":
+  version "5.4.0-pr117-f139501"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-5.4.0-pr117-f139501.tgz#dafc46d1e57033484d7f2937bbf495e08af24e40"
+  integrity sha512-tNfaKWoudTmVTsUdAlsY5+DBVzSBm7BvPJVQfbsjzBpk4e3r9v9tkhQC98QiJd/Xzr4iZmYb9KYRsRVPreM+Sg==
   dependencies:
     "@galacticcouncil/math-lbp" "^1.0.0"
     "@galacticcouncil/math-liquidity-mining" "^1.0.0"
     "@galacticcouncil/math-omnipool" "^1.0.0"
-    "@galacticcouncil/math-stableswap" "^1.0.0"
+    "@galacticcouncil/math-stableswap" "^1.1.0"
     "@galacticcouncil/math-xyk" "^1.0.0"
     "@thi.ng/cache" "^2.1.35"
     "@thi.ng/memoize" "^4.0.2"
