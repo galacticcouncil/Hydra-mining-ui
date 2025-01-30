@@ -1,42 +1,42 @@
-import { Root, Trigger } from "@radix-ui/react-dropdown-menu"
-import IconDollar from "assets/icons/IconDollarLarge.svg?react"
-import ApeIcon from "assets/icons/ApeIcon.svg?react"
-import { useModalPagination } from "components/Modal/Modal.utils"
-import { ModalContents } from "components/Modal/contents/ModalContents"
-
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
-import { HeaderDropdown } from "components/Layout/Header/HeaderDropdown/HeaderDropdown"
-import { HeaderDropdownItems } from "components/Layout/Header/HeaderDropdown/HeaderDropdownItems"
-import { HeaderDropdownItem } from "components/Layout/Header/HeaderDropdown/HeaderDropdownItem"
+import { Root, Trigger } from "@radix-ui/react-dropdown-menu";
+import IconDollar from "assets/icons/IconDollarLarge.svg?react";
+import ApeIcon from "assets/icons/ApeIcon.svg?react";
+import { useModalPagination } from "components/Modal/Modal.utils";
+import { ModalContents } from "components/Modal/contents/ModalContents";
+import TransactionsIcon from "assets/icons/TransactionsIcon.svg?react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { HeaderDropdown } from "components/Layout/Header/HeaderDropdown/HeaderDropdown";
+import { HeaderDropdownItems } from "components/Layout/Header/HeaderDropdown/HeaderDropdownItems";
+import { HeaderDropdownItem } from "components/Layout/Header/HeaderDropdown/HeaderDropdownItem";
 import {
   SToolbarButton,
   SToolbarIcon,
-} from "components/Layout/Header/toolbar/HeaderToolbar.styled"
-import { HeaderSettingsDisplayAsset } from "components/Layout/Header/settings/displayAsset/HeaderSettingsDisplayAsset"
-import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import SettingsIcon from "assets/icons/SettingsIcon.svg?react"
-import { useSettingsStore } from "state/store"
-import { Separator } from "components/Separator/Separator"
-import { DegenModeModal } from "components/Layout/Header/DegenMode/DegenModeModal"
-import { Root as DialogRoot } from "@radix-ui/react-dialog"
-import { SIndicator, SMaskContainer } from "./Settings.styled"
+} from "components/Layout/Header/toolbar/HeaderToolbar.styled";
+import { HeaderSettingsDisplayAsset } from "components/Layout/Header/settings/displayAsset/HeaderSettingsDisplayAsset";
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip";
+import SettingsIcon from "assets/icons/SettingsIcon.svg?react";
+import { useSettingsStore } from "state/store";
+import { Separator } from "components/Separator/Separator";
+import { DegenModeModal } from "components/Layout/Header/DegenMode/DegenModeModal";
+import { Root as DialogRoot } from "@radix-ui/react-dialog";
+import { SIndicator, SMaskContainer } from "./Settings.styled";
 
 const DISPLAY_ASSET_ENABLED =
-  import.meta.env.VITE_FF_DISPLAY_ASSET_ENABLED === "true"
+  import.meta.env.VITE_FF_DISPLAY_ASSET_ENABLED === "true";
 
 export const Settings = () => {
-  const { t } = useTranslation()
-  const [open, setOpen] = useState(false)
-  const [degenModalOpen, setDegenModalOpen] = useState(false)
-  const { degenMode, toggleDegenMode } = useSettingsStore()
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const [degenModalOpen, setDegenModalOpen] = useState(false);
+  const { degenMode, toggleDegenMode } = useSettingsStore();
 
-  const onClose = () => setOpen(false)
-  const onDegenModalClose = () => setDegenModalOpen(false)
+  const onClose = () => setOpen(false);
+  const onDegenModalClose = () => setDegenModalOpen(false);
   const onDegenModalAccept = () => {
-    setDegenModalOpen(false)
-    toggleDegenMode()
-  }
+    setDegenModalOpen(false);
+    toggleDegenMode();
+  };
 
   return (
     <>
@@ -59,9 +59,9 @@ export const Settings = () => {
             onClose={onClose}
             onDegenModeChange={() => {
               if (degenMode) {
-                toggleDegenMode()
+                toggleDegenMode();
               } else {
-                setDegenModalOpen(true)
+                setDegenModalOpen(true);
               }
             }}
           />
@@ -75,24 +75,24 @@ export const Settings = () => {
         />
       )}
     </>
-  )
-}
+  );
+};
 
 export const SettingsContents = ({
   onClose,
   onDegenModeChange,
 }: {
-  onClose: () => void
-  onDegenModeChange: () => void
+  onClose: () => void;
+  onDegenModeChange: () => void;
 }) => {
-  const { t } = useTranslation()
-  const { degenMode } = useSettingsStore()
-  const { page, direction, back, next } = useModalPagination()
+  const { t } = useTranslation();
+  const { degenMode } = useSettingsStore();
+  const { page, direction, back, next } = useModalPagination();
 
   const onSelect = () => {
-    back()
-    onClose()
-  }
+    back();
+    onClose();
+  };
 
   return (
     <DialogRoot>
@@ -137,6 +137,16 @@ export const SettingsContents = ({
                   css={{ background: "transparent" }}
                   sx={{ py: 16 }}
                 />
+                <Separator
+                  color="darkBlue401"
+                  sx={{ mt: 10, mx: -16, width: "auto" }}
+                />
+                <HeaderDropdownItem
+                  icon={<TransactionsIcon width={22} height={22} />}
+                  title={t(
+                    "header.settings.items.transactionFeePaymentSettings.title",
+                  )}
+                />
               </HeaderDropdownItems>
             ),
           },
@@ -149,5 +159,5 @@ export const SettingsContents = ({
         ]}
       />
     </DialogRoot>
-  )
-}
+  );
+};

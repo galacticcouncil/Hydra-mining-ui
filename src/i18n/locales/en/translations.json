@@ -167,6 +167,7 @@
   "header.settings.displayAsset.title": "Select display asset",
   "header.settings.displayAsset.usd": "USD asset with coingecko dollar price.",
   "header.settings.displayAsset.stableCoin": "USD asset.",
+  "header.settings.items.transactionFeePaymentSettings.title": "Transaction Fee Payment Settings",
   "header.warning.xcmDisabled": "Cross-chain transfers from Polkadot & AssetHub to Hydration are temporarily disabled in our UI. Please use alternative cross-chain UIs such as Nova Wallet or Talisman during this period.",
   "value": "{{ value, bignumber }}",
   "value.compact": "{{ value, compact }}",
