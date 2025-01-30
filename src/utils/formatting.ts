@@ -10,12 +10,17 @@ import { enUS } from "date-fns/locale"
 import { z } from "zod"
 import { BigNumberLikeType, normalizeBigNumber } from "./balance"
 import BigNumber from "bignumber.js"
-import { BN_10 } from "./constants"
+import { BN_10, UNIFIED_ADDRESS_FORMAT_ENABLED } from "./constants"
 import { isAnyParachain, Maybe } from "utils/helpers"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { intervalToDuration, formatDuration } from "date-fns"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
-import { H160, isEvmAccount } from "utils/evm"
+import {
+  H160,
+  isEvmAccount,
+  isEvmAddress,
+  safeConvertAddressH160,
+} from "utils/evm"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 
 export const formatNum = (
@@ -248,18 +253,32 @@ export function shortenAccountAddress(address: string, length = 6) {
 export function safeConvertAddressSS58(
   address: Maybe<string>,
   ss58prefix: number,
+  useUnifiedFormat = UNIFIED_ADDRESS_FORMAT_ENABLED,
 ) {
   try {
-    return encodeAddress(decodeAddress(address), ss58prefix)
+    return encodeAddress(
+      decodeAddress(address),
+      useUnifiedFormat ? 0 : ss58prefix,
+    )
   } catch {
     return null
   }
 }
 
-export function getChainSpecificAddress(address: string) {
-  return isEvmAccount(address)
-    ? H160.fromAccount(address)
-    : getAddressVariants(address).hydraAddress
+export function getChainSpecificAddress(
+  address: string,
+  useUnifiedFormat = UNIFIED_ADDRESS_FORMAT_ENABLED,
+) {
+  if (isEvmAccount(address)) {
+    return H160.fromAccount(address)
+  }
+
+  if (isEvmAddress(address)) {
+    return safeConvertAddressH160(address) ?? ""
+  }
+
+  const variants = getAddressVariants(address)
+  return useUnifiedFormat ? variants.polkadotAddress : variants.hydraAddress
 }
 
 /**
@@ -278,11 +297,9 @@ export const getAddressVariants = (address: string) => {
   const isHydraVariant = isHydraAddress(address)
   const hydraAddress = isHydraVariant
     ? address
-    : encodeAddress(decodeAddress(address), HYDRA_ADDRESS_PREFIX)
+    : safeConvertAddressSS58(address, HYDRA_ADDRESS_PREFIX, false) ?? ""
 
-  const polkadotAddress = isHydraVariant
-    ? encodeAddress(decodeAddress(address))
-    : address
+  const polkadotAddress = safeConvertAddressSS58(address, 0) ?? ""
 
   return { hydraAddress, polkadotAddress }
 }

@@ -26,6 +26,7 @@ interface Props {
   rightIcon?: ReactNode
   openAddressBook?: () => void
   className?: string
+  hideNativeAddress?: boolean
 }
 
 export const WalletTransferAccountInput = (props: Props) => {
@@ -79,6 +80,7 @@ export const WalletTransferAccountInput = (props: Props) => {
             error={props.error}
             placeholder={props.placeholder}
             rightIcon={props.rightIcon}
+            hideNativeAddress={props.hideNativeAddress}
           />
         </div>
       </SContainer>

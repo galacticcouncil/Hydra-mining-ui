@@ -55,6 +55,8 @@ export const LINKS = {
   borrowMarkets: "/borrow/markets",
   memepad: "/memepad",
   submitTransaction: "/submit-transaction",
+  deposit: "/deposit",
+  withdraw: "/withdraw",
 }
 
 export const MENU_ITEMS = [

@@ -50,6 +50,7 @@ const colors = {
   basic750: "#444559",
   basic800: "#26282F",
   basic900: "#00041D",
+  basic1000: "#1C1A1F",
   warning100: "#FFE2C3",
   warning200: "#FFDF38",
   warning300: "#F5A855",

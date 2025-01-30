@@ -13,6 +13,7 @@ export type AlertProps = {
   variant: AlertVariant
   size?: AlertSize
   children?: ReactNode
+  hideIcon?: boolean
 }
 
 export const Alert: React.FC<AlertProps> = ({
@@ -20,12 +21,13 @@ export const Alert: React.FC<AlertProps> = ({
   size = "medium",
   className,
   children,
+  hideIcon,
 }) => {
   return (
     <SContainer variant={variant} size={size} className={className}>
-      {variant === "error" && <ErrorIcon />}
-      {variant === "warning" && <WarningIcon />}
-      {variant === "info" && <InfoIcon />}
+      {!hideIcon && variant === "error" && <ErrorIcon />}
+      {!hideIcon && variant === "warning" && <WarningIcon />}
+      {!hideIcon && variant === "info" && <InfoIcon />}
 
       <div sx={{ flex: "column" }}>
         {typeof children === "string" ? (

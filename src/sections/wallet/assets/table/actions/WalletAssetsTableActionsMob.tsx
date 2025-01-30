@@ -3,7 +3,6 @@ import { useSetAsFeePayment } from "api/payments"
 import TradeIcon from "assets/icons/Fill.svg?react"
 import DollarIcon from "assets/icons/DollarIcon.svg?react"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
-import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { Button } from "components/Button/Button"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Modal } from "components/Modal/Modal"
@@ -188,23 +187,6 @@ export const WalletAssetsTableActionsMob = ({
                   <TransferIcon />
                   {t("wallet.assets.table.actions.transfer")}
                 </Button>
-
-                <Link
-                  to={LINKS.cross_chain}
-                  disabled={account?.isExternalWalletConnected}
-                  sx={{ width: "100%" }}
-                >
-                  <Button
-                    sx={{ width: "100%" }}
-                    size="small"
-                    disabled={
-                      account?.isExternalWalletConnected || row.meta.isErc20
-                    }
-                  >
-                    <PlusIcon />
-                    {t("wallet.assets.table.actions.deposit")}
-                  </Button>
-                </Link>
 
                 {hasRugCheckData && (
                   <>

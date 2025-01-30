@@ -86,13 +86,6 @@ export const WalletAssetsTableActions = (props: Props) => {
       onSelect: () => props.onTransferClick(),
       disabled: account?.isExternalWalletConnected,
     },
-    {
-      key: "deposit",
-      icon: <PlusIcon />,
-      label: t("wallet.assets.table.actions.deposit"),
-      onSelect: () => navigate({ to: LINKS.cross_chain }),
-      disabled: account?.isExternalWalletConnected || props.asset.meta.isErc20,
-    },
   ]
 
   const allowSetAsPaymentFee = isEvmAccount(account?.address)

@@ -9,7 +9,6 @@ import { REFERRAL_CODE_REGEX } from "sections/referrals/ReferralsPage.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { useEffect } from "react"
-import { FundWalletButton } from "components/FundWallet/FundWalletButton"
 import {
   CodeFormValues,
   UserState,
@@ -29,6 +28,8 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
 import BN from "bignumber.js"
+import { useNavigate } from "@tanstack/react-location"
+import { LINKS } from "utils/navigation"
 
 export const CodeForm = () => {
   const { t } = useTranslation()
@@ -36,6 +37,7 @@ export const CodeForm = () => {
   const { native } = useAssets()
   const { api } = useRpcProvider()
   const referralLength = useReferralCodeLength()
+  const navigate = useNavigate()
 
   const registerReferralCode = useRegisterReferralCode()
   const registrationFee = useRegistrationLinkFee()
@@ -183,9 +185,14 @@ export const CodeForm = () => {
               </Button>
             )}
             {state === UserState.NOT_FUNDED && (
-              <FundWalletButton fullWidth variant="primary" type="button">
+              <Button
+                fullWidth
+                variant="primary"
+                type="button"
+                onClick={() => navigate({ to: LINKS.deposit })}
+              >
                 {t("referrals.button.depositFunds")}
-              </FundWalletButton>
+              </Button>
             )}
             {state === UserState.DISCONECTED && (
               <Web3ConnectModalButton

@@ -12,9 +12,15 @@ type Props = {
   onClick?: () => void
   assetId: string
   className?: string
+  fullWidth?: boolean
 }
 
-export const AssetSelectButton = ({ onClick, assetId, className }: Props) => {
+export const AssetSelectButton = ({
+  onClick,
+  assetId,
+  className,
+  fullWidth,
+}: Props) => {
   const { t } = useTranslation()
   const { getAsset } = useAssets()
   const asset = getAsset(assetId)
@@ -29,6 +35,7 @@ export const AssetSelectButton = ({ onClick, assetId, className }: Props) => {
 
   return (
     <SSelectAssetButton
+      fullWidth={fullWidth}
       className={className}
       size="small"
       onClick={(e) => {
@@ -65,7 +72,7 @@ export const AssetSelectButton = ({ onClick, assetId, className }: Props) => {
         </Text>
       )}
 
-      {isSelectable && <Icon icon={<ChevronDown />} />}
+      {isSelectable && <Icon sx={{ ml: "auto" }} icon={<ChevronDown />} />}
     </SSelectAssetButton>
   )
 }

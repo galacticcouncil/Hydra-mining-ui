@@ -20,6 +20,7 @@ type InputProps = {
   placeholder?: string
   className?: string
   rightIcon?: ReactNode
+  hideNativeAddress?: boolean
 }
 
 export const AddressInput = forwardRef<HTMLInputElement, InputProps>(
@@ -27,10 +28,9 @@ export const AddressInput = forwardRef<HTMLInputElement, InputProps>(
     const { native } = useAssets()
     const { t } = useTranslation()
 
-    const nativeAddress = safeConvertAddressSS58(
-      props.value,
-      HYDRA_ADDRESS_PREFIX,
-    )
+    const nativeAddress = props.hideNativeAddress
+      ? null
+      : safeConvertAddressSS58(props.value, HYDRA_ADDRESS_PREFIX)
 
     return (
       <SInputWrapper disabled={props.disabled} className={props.className}>

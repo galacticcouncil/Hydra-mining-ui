@@ -51,3 +51,6 @@ export const DOC_LINK = "https://docs.hydration.net"
 export const HYDRATION_PARACHAIN_ID = 2034
 export const HYDRATION_PARACHAIN_ADDRESS =
   "13cKp89Uh2yWgTG28JA1QEvPUMjEPKejqkjHKf9zqLiFKjH6"
+
+export const UNIFIED_ADDRESS_FORMAT_ENABLED =
+  import.meta.env.VITE_FF_UNIFIED_ADDRESS_FORMAT === "true"

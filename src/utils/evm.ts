@@ -12,6 +12,7 @@ import { EvmParachain } from "@galacticcouncil/xcm-core"
 import { isAnyEvmChain } from "./helpers"
 import { createSubscanLink } from "utils/formatting"
 import { isMetaMask, isMetaMaskLike } from "utils/metamask"
+import { UNIFIED_ADDRESS_FORMAT_ENABLED } from "utils/constants"
 
 const nativeEvmChain = chainsMap.get("hydration") as EvmParachain
 
@@ -48,13 +49,13 @@ export class H160 {
     this.address = safeConvertAddressH160(address) ?? ""
   }
 
-  toAccount = () => {
+  toAccount = (useUnifiedFormat = UNIFIED_ADDRESS_FORMAT_ENABLED) => {
     const addressBytes = Buffer.from(this.address.slice(2), "hex")
     return encodeAddress(
       new Uint8Array(
         Buffer.concat([H160.prefixBytes, addressBytes, Buffer.alloc(8)]),
       ),
-      HYDRA_ADDRESS_PREFIX,
+      useUnifiedFormat ? 0 : HYDRA_ADDRESS_PREFIX,
     )
   }
 
