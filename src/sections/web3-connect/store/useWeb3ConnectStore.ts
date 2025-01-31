@@ -80,6 +80,7 @@ type WalletProviderStore = WalletProviderState & {
   getStatus: (provider: WalletProviderType | null) => WalletProviderStatus
   getConnectedProviders: () => WalletProviderEntry[]
   setError: (error: string) => void
+  disconnectIncompatible: () => void
   disconnect: (provider?: WalletProviderType) => void
 }
 
@@ -145,6 +146,21 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
         })
       },
       setError: (error) => set((state) => ({ ...state, error })),
+      disconnectIncompatible: () =>
+        set((state) => ({
+          ...state,
+          ...initialState,
+          account:
+            state.account &&
+            COMPATIBLE_WALLET_PROVIDERS.includes(state.account.provider)
+              ? state.account
+              : null,
+          providers: state.providers.filter((p) =>
+            COMPATIBLE_WALLET_PROVIDERS.includes(p.type),
+          ),
+          mode: state.mode,
+          open: state.open,
+        })),
       disconnect: (provider) => {
         set((state) => ({
           ...state,

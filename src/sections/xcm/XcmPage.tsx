@@ -71,7 +71,7 @@ export function XcmPage() {
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const location = useLocation()
-  const { disconnect } = useWeb3ConnectStore()
+  const { disconnectIncompatible } = useWeb3ConnectStore()
   const [tokenCheck, setTokenCheck] = React.useState<Asset | null>(null)
 
   const [incomingSrcChain, setIncomingSrcChain] = React.useState("")
@@ -164,7 +164,7 @@ export function XcmPage() {
       const prevPath = location.current.pathname
       const unsubscribe = location.history.listen(({ location }) => {
         if (prevPath !== location.pathname) {
-          disconnect(account.provider)
+          disconnectIncompatible()
           toggleWeb3Modal(WalletMode.Default, {
             description: t("walletConnect.provider.description.invalidWallet"),
           })
@@ -175,7 +175,7 @@ export function XcmPage() {
         unsubscribe()
       }
     }
-  }, [account, disconnect, location, t, toggleWeb3Modal])
+  }, [account, disconnectIncompatible, location, t, toggleWeb3Modal])
 
   return (
     <SContainer>
