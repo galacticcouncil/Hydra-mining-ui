@@ -38,7 +38,7 @@
     "@emotion/styled": "^11.10.4",
     "@ethersproject/address": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
-    "@galacticcouncil/apps": "^10.2.0",
+    "@galacticcouncil/apps": "10.3.0-pr165-87bf766",
     "@galacticcouncil/math-lbp": "^1.0.0",
     "@galacticcouncil/math-liquidity-mining": "^1.0.0",
     "@galacticcouncil/math-omnipool": "^1.0.0",
