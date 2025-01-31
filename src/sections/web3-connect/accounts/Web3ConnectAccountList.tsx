@@ -6,6 +6,7 @@ import {
 } from "sections/web3-connect/Web3Connect.utils"
 import {
   Account,
+  COMPATIBLE_WALLET_PROVIDERS,
   PROVIDERS_BY_WALLET_MODE,
   useWeb3ConnectStore,
   WalletMode,
@@ -56,11 +57,20 @@ const AccountComponent: FC<
   const Component = getAccountComponentByType(account.provider)
   const { setBalanceMap } = useAccountBalanceMap()
 
+  const isCompatibleProvider = COMPATIBLE_WALLET_PROVIDERS.includes(
+    account.provider,
+  )
+
   const { balanceTotal, isLoading } = useWalletAssetsTotals({
-    address: account.address,
+    address: isCompatibleProvider ? account.address : "",
   })
 
   useShallowCompareEffect(() => {
+    if (!isCompatibleProvider) {
+      setBalanceMap(account.address, "0")
+      return
+    }
+
     if (!isLoading) {
       setBalanceMap(account.address, balanceTotal)
     }

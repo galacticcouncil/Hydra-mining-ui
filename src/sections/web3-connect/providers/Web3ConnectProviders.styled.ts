@@ -56,6 +56,8 @@ export const SProviderButton = styled(ButtonTransparent)`
   }
 `
 
+export const SProviderButtonLink = SProviderButton.withComponent("a")
+
 export const SAltProviderButton = styled(Chip)`
   @media ${theme.viewport.lt.sm} {
     width: 100%;

@@ -37,6 +37,7 @@ import { Web3ConnectProviderIcons } from "sections/web3-connect/providers/Web3Co
 import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
 import { POLKADOT_APP_NAME } from "utils/api"
 import ChevronRight from "assets/icons/ChevronRight.svg?react"
+import { isMobileDevice } from "utils/helpers"
 
 const useWalletProviders = (mode: WalletMode, chain?: string) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -75,7 +76,9 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
       otherProviders: WalletProvider[]
     }>(
       (prev, curr) => {
-        if (curr.wallet.installed) {
+        const isInstalled = !!curr.wallet.installed
+        const isOpenableInMobileApp = isMobileDevice() && !!curr.wallet.appLink
+        if (isInstalled || isOpenableInMobileApp) {
           prev.installedProviders.push(curr)
         } else {
           prev.otherProviders.push(curr)

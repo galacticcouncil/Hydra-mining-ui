@@ -460,6 +460,7 @@
   "walletConnect.provider.description.invalidWallet": "Connect a Hydration compatible wallet.",
   "walletConnect.provider.continue": "Connect",
   "walletConnect.provider.download": "Download",
+  "walletConnect.provider.open": "Open",
   "walletConnect.provider.disconnect": "Disconnect",
   "walletConnect.provider.connectAll": "Connect all",
   "walletConnect.provider.mode.substrate": "Polkadot",

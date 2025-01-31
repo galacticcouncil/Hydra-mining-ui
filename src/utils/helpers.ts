@@ -437,3 +437,28 @@ export const bnSort = (valueA?: string, valueB?: string) => {
 
   return BN(valueA).gt(valueB) ? 1 : -1
 }
+
+export const isMobileDevice = () => {
+  const matches = [
+    /Android/i,
+    /webOS/i,
+    /iPhone/i,
+    /iPad/i,
+    /iPod/i,
+    /BlackBerry/i,
+    /Windows Phone/i,
+  ]
+
+  return matches.some((reg) => {
+    return navigator.userAgent.match(reg)
+  })
+}
+
+export const isAndroidDevice = () => !!navigator.userAgent.match(/Android/i)
+
+export const isIOSDevice = () =>
+  !!navigator.userAgent.match(/iPhone|iPad|iPod/i)
+
+export const openUrl = (url: string, target = "_blank") => {
+  window.open(url, target)
+}
