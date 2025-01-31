@@ -102,12 +102,15 @@ export const SPageInner = styled.div`
 export const SSubHeader = styled.div`
   width: 100vw;
 
-  position: relative;
-  z-index: 1;
+  position: sticky;
+  top: calc(var(--nav-height) - 14px);
+  z-index: ${theme.zIndices.header};
 
   overflow-x: auto;
 
   padding-bottom: 1px;
+  backdrop-filter: blur(27px);
+  background: rgba(9, 9, 9, 0.11);
 
   ::after {
     content: "";
