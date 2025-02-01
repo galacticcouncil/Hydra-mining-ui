@@ -5,58 +5,53 @@ import {
 import { useBestNumber } from "api/chain"
 import { useStableswapPool } from "api/stableswap"
 import { useTotalIssuances } from "api/totalIssuance"
-import { normalizeBigNumber } from "utils/balance"
-import { BN_0 } from "utils/constants"
-import BigNumber from "bignumber.js"
-import { TAsset } from "providers/assets"
+import { useCallback, useMemo } from "react"
 
 type Args = {
   poolId: string
-  shares: BigNumber
-  asset?: TAsset
-  fee: BigNumber
+  fee: string
   reserves: { asset_id: number; amount: string }[]
 }
 
-export const useStablepoolLiquidityOut = ({
-  poolId,
-  asset,
-  fee,
-  reserves,
-  shares,
-}: Args) => {
-  const pool = useStableswapPool(poolId)
-  const bestNumber = useBestNumber()
-  const currentBlock = bestNumber.data?.relaychainBlockNumber
-
+export const useStablepoolLiquidityOut = ({ poolId, fee, reserves }: Args) => {
+  const { data: pool } = useStableswapPool(poolId)
+  const { data: bestNumber } = useBestNumber()
   const { data: issuances } = useTotalIssuances()
-  const shareIssuance = issuances?.get(poolId)
 
-  if (!pool.data || !currentBlock || !shareIssuance || !asset) {
-    return ""
+  const currentBlock = bestNumber?.relaychainBlockNumber.toString()
+  const shareIssuance = issuances?.get(poolId)?.toString()
+
+  const amplification = useMemo(() => {
+    if (pool && currentBlock) {
+      return calculate_amplification(
+        pool.initialAmplification.toString(),
+        pool.finalAmplification.toString(),
+        pool.initialBlock.toString(),
+        pool.finalBlock.toString(),
+        currentBlock,
+      )
+    }
+  }, [pool, currentBlock])
+
+  const getAssetOutValue = useCallback(
+    (assetId: number, shares: string) => {
+      if (amplification && shareIssuance) {
+        return calculate_liquidity_out_one_asset(
+          JSON.stringify(reserves),
+          shares,
+          assetId,
+          amplification,
+          shareIssuance,
+          fee,
+        )
+      }
+
+      return "0"
+    },
+    [amplification, fee, reserves, shareIssuance],
+  )
+
+  return {
+    getAssetOutValue,
   }
-
-  const amplification = calculate_amplification(
-    pool.data.initialAmplification.toString(),
-    pool.data.finalAmplification.toString(),
-    pool.data.initialBlock.toString(),
-    pool.data.finalBlock.toString(),
-    currentBlock.toString(),
-  )
-
-  const result = calculate_liquidity_out_one_asset(
-    JSON.stringify(reserves),
-    shares.dp(0).toString(),
-    Number(asset.id),
-    amplification,
-    shareIssuance.toString(),
-    fee.toString(),
-  )
-
-  return BigNumber.maximum(
-    normalizeBigNumber(result).shiftedBy(
-      normalizeBigNumber(asset.decimals).negated().toNumber(),
-    ),
-    BN_0,
-  ).toString()
 }

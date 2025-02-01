@@ -6,7 +6,7 @@ import { useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useStore } from "state/store"
-import { getFloatingPointAmount, normalizeBigNumber } from "utils/balance"
+import { getFloatingPointAmount } from "utils/balance"
 import {
   BN_100,
   SLIPPAGE_LIMIT,
@@ -20,8 +20,9 @@ import { STradingPairContainer } from "sections/pools/modals/RemoveLiquidity/Rem
 import { RemoveLiquidityInput } from "sections/pools/modals/RemoveLiquidity/components/RemoveLiquidityInput"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAssets } from "providers/assets"
-import { scale } from "utils/balance"
 import { createToastMessages } from "state/toasts"
+import { scaleHuman } from "utils/balance"
+import { Switch } from "components/Switch/Switch"
 
 type RemoveLiquidityProps = {
   assetId: string
@@ -35,6 +36,8 @@ type RemoveLiquidityProps = {
   onSuccess: () => void
   onAssetOpen: () => void
   defaultValue?: number
+  splitRemove: boolean
+  setSplitRemove: (enabled: boolean) => void
 }
 
 export const RemoveStablepoolLiquidityForm = ({
@@ -44,6 +47,8 @@ export const RemoveStablepoolLiquidityForm = ({
   position,
   onAssetOpen,
   defaultValue,
+  splitRemove,
+  setSplitRemove,
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
   const form = useForm<{ value: number }>({
@@ -58,38 +63,77 @@ export const RemoveStablepoolLiquidityForm = ({
   const value = form.watch("value")
 
   const removeSharesValue = useMemo(() => {
-    return position.amount.div(100).times(value)
+    return position.amount.div(100).times(value).dp(0).toString()
   }, [value, position])
 
-  const liquidityOut = useStablepoolLiquidityOut({
-    shares: removeSharesValue,
+  const { getAssetOutValue } = useStablepoolLiquidityOut({
     reserves: position.reserves,
     poolId: position.poolId,
-    asset,
-    fee: position.fee,
+    fee: position.fee.toString(),
   })
-
-  const fee = position.fee.times(liquidityOut)
 
   const feeDisplay = useMemo(
     () => position.fee.times(BN_100).toString(),
     [position.fee],
   )
 
-  const slippage = SLIPPAGE_LIMIT.times(liquidityOut).div(100)
-  const minAmountOut = normalizeBigNumber(liquidityOut)
-    .minus(fee)
-    .minus(slippage)
+  const minAssetsOut = useMemo(() => {
+    const reservesAmount = position.reserves.length
+
+    if (splitRemove) {
+      return position.reserves.map((reserve) => {
+        const meta = getAssetWithFallback(reserve.asset_id.toString())
+        const assetOutValue = getAssetOutValue(
+          reserve.asset_id,
+          BigNumber(removeSharesValue).div(reservesAmount).toFixed(0),
+        )
+
+        const minValue = "0"
+
+        return {
+          minValue,
+          assetOutValue,
+          meta,
+        }
+      })
+    }
+
+    const meta = getAssetWithFallback(assetId)
+    const assetOutValue = getAssetOutValue(Number(assetId), removeSharesValue)
+    const minValue = BigNumber(assetOutValue)
+      .minus(SLIPPAGE_LIMIT.plus(feeDisplay).times(assetOutValue).div(100))
+      .dp(0)
+      .toString()
+
+    return [{ minValue, assetOutValue, meta }]
+  }, [
+    assetId,
+    getAssetOutValue,
+    getAssetWithFallback,
+    position,
+    removeSharesValue,
+    feeDisplay,
+    splitRemove,
+  ])
 
   const handleSubmit = async () => {
     await createTransaction(
       {
-        tx: api.tx.stableswap.removeLiquidityOneAsset(
-          position.poolId,
-          assetId,
-          removeSharesValue.dp(0).toString(),
-          scale(minAmountOut, asset.decimals).dp(0).toString(),
-        ),
+        tx: splitRemove
+          ? api.tx.stableswap.removeLiquidity(
+              position.poolId,
+              removeSharesValue,
+              minAssetsOut.map((minAssetOut) => ({
+                assetId: minAssetOut.meta.id,
+                amount: minAssetOut.minValue,
+              })),
+            )
+          : api.tx.stableswap.removeLiquidityOneAsset(
+              position.poolId,
+              assetId,
+              removeSharesValue,
+              minAssetsOut[0].minValue,
+            ),
       },
       {
         onSuccess,
@@ -102,9 +146,9 @@ export const RemoveStablepoolLiquidityForm = ({
         toast: createToastMessages("liquidity.stablepool.remove", {
           t,
           tOptions: {
-            out: liquidityOut,
-            amount: removeSharesValue,
-            fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
+            out: scaleHuman(removeSharesValue, STABLEPOOL_TOKEN_DECIMALS)
+              .dp(4)
+              .toString(),
             symbol: asset?.symbol,
           },
           components: ["span", "span.highlight"],
@@ -124,6 +168,32 @@ export const RemoveStablepoolLiquidityForm = ({
       }}
     >
       <div>
+        <div
+          sx={{
+            flex: "row",
+            justify: "space-between",
+            align: "center",
+            mx: -24,
+            mb: 16,
+            px: 24,
+            py: 8,
+          }}
+          css={{
+            borderTop: "1px solid #1C2038",
+            borderBottom: "1px solid #1C2038",
+          }}
+        >
+          <Text fs={14} color="brightBlue300">
+            {t("liquidity.remove.modal.split")}
+          </Text>
+          <Switch
+            value={splitRemove}
+            onCheckedChange={setSplitRemove}
+            label={t("yes")}
+            name={t("liquidity.remove.modal.split")}
+          />
+        </div>
+
         <div sx={{ flex: "row", justify: "space-between" }}>
           <div>
             <Text
@@ -138,7 +208,11 @@ export const RemoveStablepoolLiquidityForm = ({
             >
               {t("selectAsset.title")}
             </Text>
-            <AssetSelectButton assetId={assetId} onClick={onAssetOpen} />
+            <AssetSelectButton
+              assetId={assetId}
+              onClick={onAssetOpen}
+              disabled={splitRemove}
+            />
           </div>
           <div>
             <Text fs={32} sx={{ mt: 24 }}>
@@ -175,18 +249,20 @@ export const RemoveStablepoolLiquidityForm = ({
           <Text color="brightBlue300">
             {t("liquidity.remove.modal.receive")}
           </Text>
-          {asset && (
+          {minAssetsOut.map(({ assetOutValue, meta }) => (
             <RemoveLiquidityReward
-              id={asset.id}
-              name={asset.symbol}
-              symbol={asset.symbol}
+              key={meta.id}
+              id={meta.id}
+              name={meta.symbol}
+              symbol={meta.symbol}
               amount={t("value", {
-                value: liquidityOut,
-                type: "token",
-                numberSuffix: ` ${asset.symbol}`,
+                value: BigNumber(assetOutValue),
+                fixedPointScale: meta.decimals,
+                numberSuffix: ` ${meta.symbol}`,
+                numberPrefix: splitRemove ? "~" : "",
               })}
             />
-          )}
+          ))}
         </STradingPairContainer>
       </div>
       <Spacer size={17} />
@@ -199,7 +275,7 @@ export const RemoveStablepoolLiquidityForm = ({
         </Text>
       </div>
       <Spacer size={20} />
-      <Button fullWidth variant="primary" disabled={removeSharesValue.isZero()}>
+      <Button fullWidth variant="primary" disabled={removeSharesValue === "0"}>
         {t("liquidity.stablepool.remove.confirm")}
       </Button>
     </form>

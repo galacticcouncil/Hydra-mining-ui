@@ -12,9 +12,15 @@ type Props = {
   onClick?: () => void
   assetId: string
   className?: string
+  disabled?: boolean
 }
 
-export const AssetSelectButton = ({ onClick, assetId, className }: Props) => {
+export const AssetSelectButton = ({
+  onClick,
+  assetId,
+  className,
+  disabled,
+}: Props) => {
   const { t } = useTranslation()
   const { getAsset } = useAssets()
   const asset = getAsset(assetId)
@@ -31,6 +37,7 @@ export const AssetSelectButton = ({ onClick, assetId, className }: Props) => {
     <SSelectAssetButton
       className={className}
       size="small"
+      disabled={disabled}
       onClick={(e) => {
         e.preventDefault()
         onClick?.()

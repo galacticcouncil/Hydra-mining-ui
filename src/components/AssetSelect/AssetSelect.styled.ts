@@ -72,11 +72,17 @@ export const SSelectAssetButton = styled(Button)`
   padding: 6px 2px;
   color: white;
 
-  :hover {
+  &:not(:disabled):hover {
     border: unset;
     margin-right: 20px;
     cursor: pointer;
     background: rgba(${theme.rgbColors.white}, 0.06);
+  }
+
+  &[disabled] {
+    cursor: not-allowed;
+    opacity: 0.2;
+    border: unset;
   }
 
   & > span {

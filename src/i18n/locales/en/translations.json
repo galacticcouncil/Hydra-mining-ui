@@ -322,6 +322,7 @@
   "liquidity.add.modal.xyk.toast.onSuccess": "<0>Added liquidity in exchange for </0><1>{{shares, bignumber(type: 'token')}}</1><0> asset shares.</0>",
   "liquidity.remove.modal.title": "Remove liquidity",
   "liquidity.remove.modal.value": "{{ value, bignumber(type: 'token') }}",
+  "liquidity.remove.modal.split": "Remove assets proportionally",
   "liquidity.remove.modal.receive": "You will receive:",
   "liquidity.remove.modal.price": "Price:",
   "liquidity.remove.modal.shares": "{{ shares, bignumber(type: 'token') }} Shares",

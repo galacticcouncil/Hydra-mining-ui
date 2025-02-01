@@ -60,6 +60,7 @@ export const RemoveLiquidityModal = ({
   const [sharesAmount, setSharesAmount] = useState<string>()
   const [removeAll, setRemoveAll] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
+  const [splitRemove, setSplitRemove] = useState(true)
 
   const handleBack = () => {
     if (page === RemoveStablepoolLiquidityPage.ASSETS) {
@@ -221,6 +222,8 @@ export const RemoveLiquidityModal = ({
                 onAssetOpen={() =>
                   paginateTo(RemoveStablepoolLiquidityPage.ASSETS)
                 }
+                splitRemove={splitRemove}
+                setSplitRemove={setSplitRemove}
               />
             ),
           },
@@ -231,7 +234,7 @@ export const RemoveLiquidityModal = ({
               <AssetsModalContent
                 allAssets={true}
                 hideInactiveAssets={true}
-                allowedAssets={assets.map((asset) => asset)}
+                allowedAssets={assets}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
                   handleBack()
